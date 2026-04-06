@@ -13,7 +13,6 @@ import hashlib
 import hmac
 import time
 
-
 DEFAULT_TOLERANCE = 300  # 5 minutes
 
 

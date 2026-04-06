@@ -21,6 +21,18 @@ from jambonz_sdk.types.components import (
     TurnTaking,
     Vad,
 )
+from jambonz_sdk.types.rest import (
+    CallInfo,
+    CallStatus,
+    CreateCallRequest,
+    ListCallsFilter,
+)
+from jambonz_sdk.types.session import (
+    CallDirection,
+    CallSession,
+    WsMessage,
+    WsMessageType,
+)
 from jambonz_sdk.types.verbs import (
     AlertVerb,
     AnswerVerb,
@@ -29,8 +41,8 @@ from jambonz_sdk.types.verbs import (
     ConfigVerb,
     DeepgramS2sVerb,
     DequeueVerb,
-    DialVerb,
     DialogflowVerb,
+    DialVerb,
     DtmfVerb,
     DubVerb,
     ElevenlabsS2sVerb,
@@ -56,18 +68,6 @@ from jambonz_sdk.types.verbs import (
     TagVerb,
     TranscribeVerb,
     UltravoxS2sVerb,
-)
-from jambonz_sdk.types.rest import (
-    CallInfo,
-    CallStatus,
-    CreateCallRequest,
-    ListCallsFilter,
-)
-from jambonz_sdk.types.session import (
-    CallDirection,
-    CallSession,
-    WsMessage,
-    WsMessageType,
 )
 
 __all__ = [

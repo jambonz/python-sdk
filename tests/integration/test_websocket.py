@@ -22,7 +22,6 @@ import pytest
 
 from jambonz_sdk.websocket import create_endpoint
 
-
 # ── Helpers ─────────────────────────────────────────────────────────
 
 def _session_new(call_sid="call-123", msgid="msg-1", **extra):

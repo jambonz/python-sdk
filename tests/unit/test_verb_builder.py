@@ -13,13 +13,11 @@ these tests verify the SDK can pass it through correctly.
 """
 
 import json
-from pathlib import Path
 
 import pytest
 
-from jambonz_sdk.verb_builder import VerbBuilder, _SPECS
+from jambonz_sdk.verb_builder import _SPECS, VerbBuilder
 from jambonz_sdk.verb_registry import VERB_DEFS
-
 
 # ── Spec-driven: every registered verb must exist as a method ───────
 

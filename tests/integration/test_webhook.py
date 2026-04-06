@@ -12,14 +12,12 @@ Each test validates the HTTP response matches the jambonz webhook contract:
 - Body is a JSON array of verb objects
 """
 
-import json
 
 import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
 
 from jambonz_sdk.webhook import WebhookResponse, env_vars_middleware
-
 
 # ── Sample app simulating a real jambonz webhook application ────────
 

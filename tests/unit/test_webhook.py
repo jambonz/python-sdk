@@ -17,7 +17,6 @@ import pytest
 from jambonz_sdk._signature import verify_signature
 from jambonz_sdk.webhook import WebhookResponse, env_vars_middleware, verify_signature_middleware
 
-
 # ── WebhookResponse: must produce valid jambonz verb arrays ─────────
 
 class TestWebhookResponseContract:
@@ -52,7 +51,6 @@ class TestWebhookResponseContract:
 
     def test_inherits_all_verb_methods(self):
         """WebhookResponse must have the same verb methods as VerbBuilder."""
-        from jambonz_sdk.verb_builder import VerbBuilder
         from jambonz_sdk.verb_registry import VERB_DEFS
         for verb_def in VERB_DEFS:
             assert hasattr(WebhookResponse, verb_def.method_name)

@@ -8,7 +8,6 @@ Tests validate the REST API contract:
 - Resource accessors (calls, conferences, queues) exist and function
 """
 
-import json
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest

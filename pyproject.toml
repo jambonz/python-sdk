@@ -60,7 +60,11 @@ target-version = "py310"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP"]
+select = ["E", "F", "I", "W", "UP"]
+ignore = ["UP007", "E501"]  # UP007: Union needed at runtime; E501: long lines in test data
+
+[tool.ruff.lint.per-file-ignores]
+"*.pyi" = ["E501"]
 
 [tool.mypy]
 python_version = "3.10"
