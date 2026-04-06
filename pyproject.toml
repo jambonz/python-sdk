@@ -46,7 +46,7 @@ dev = [
 packages = ["src/jambonz_sdk"]
 
 [tool.hatch.build]
-include = ["src/jambonz_sdk/**/*.py", "src/jambonz_sdk/specs.json"]
+include = ["src/jambonz_sdk/**/*.py", "src/jambonz_sdk/**/*.pyi", "src/jambonz_sdk/specs.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
