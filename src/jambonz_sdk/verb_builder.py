@@ -13,8 +13,8 @@ from __future__ import annotations
 import inspect
 import json
 import logging
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any, Union
 
 if sys.version_info >= (3, 11):
