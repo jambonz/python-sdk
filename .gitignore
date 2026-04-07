@@ -12,5 +12,4 @@ build/
 htmlcov/
 .coverage
 *.egg
-mcp.json
 .vscode/
