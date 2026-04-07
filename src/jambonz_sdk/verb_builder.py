@@ -14,7 +14,13 @@ import inspect
 import json
 import logging
 from pathlib import Path
-from typing import Any, Self, Union
+import sys
+from typing import Any, Union
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from jambonz_sdk.types.verbs import AnyVerb
 from jambonz_sdk.verb_registry import VERB_DEFS, VerbDef

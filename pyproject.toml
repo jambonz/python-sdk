@@ -25,6 +25,8 @@ classifiers = [
 dependencies = [
     "aiohttp>=3.9",
     "jsonschema>=4.20",
+    "referencing>=0.31",
+    "typing_extensions>=4.0; python_version < '3.11'",
 ]
 
 [project.urls]
