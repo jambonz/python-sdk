@@ -5,7 +5,7 @@ Python SDK for the [jambonz](https://jambonz.org) CPaaS platform.
 ## Installation
 
 ```bash
-pip install jambonz-sdk
+pip install jambonz-python-sdk
 ```
 
 ## Quick Start
@@ -72,39 +72,22 @@ async with JambonzClient(
 
 ### Spec-driven verb generation
 
-The SDK does **not** hardcode verb method signatures. Instead, verb methods (`.say()`, `.gather()`, `.dial()`, `.pipeline()`, etc.) are **auto-generated at import time** from [`specs.json`](https://github.com/jambonz/verb-specifications) — the same specification used by the Node.js SDK and the jambonz server.
-
-```
-specs.json                 verb_registry.py              VerbBuilder
-┌──────────────────┐      ┌───────────────────┐      ┌──────────────────┐
-│ say:              │      │ VerbDef("say",    │      │ .say(            │
-│   properties:     │ ──── │   "say",          │ ──── │   text: str,     │
-│     text: string  │      │   doc="Speak...") │      │   loop: int|str, │
-│     loop: number  │      │                   │      │   synthesizer:   │
-│     synthesizer:  │      │ VerbDef("llm",    │      │     dict, ...)   │
-│       #synthesizer│      │   "openai_s2s",   │      │                  │
-│   required: []    │      │   inject={vendor:  │      │ .openai_s2s(     │
-│                   │      │     "openai"})     │      │   model: str,    │
-│ llm:              │      │                   │      │   llmOptions:    │
-│   properties:     │ ──── │ ...31 verb defs   │ ──── │     dict, ...)   │
-│     vendor: string│      └───────────────────┘      │                  │
-│     model: string │                                  │ ...31 methods    │
-│     llmOptions:   │                                  └──────────────────┘
-│       object      │
-└──────────────────┘
-```
+The SDK does **not** hardcode verb method signatures. Instead, verb methods (`.say()`, `.gather()`, `.dial()`, `.pipeline()`, etc.) are **auto-generated at import time** from [JSON Schema](https://github.com/jambonz/schema) files — the same schemas used by the Node.js SDK and the jambonz server.
 
 **What this means:**
 
-- When `specs.json` adds a new property to a verb, the SDK picks it up automatically — no code change needed
+- When the schema adds a new property to a verb, the SDK picks it up automatically — no code change needed
 - Every method has **real typed parameters** (not `**kwargs: Any`) so IDEs show autocomplete and type hints
 - Verb synonyms (`stream` ↔ `listen`, `openai_s2s` → `llm` with `vendor: "openai"`) are handled by the registry
 
-### Updating the spec
+### Updating the schema
 
 ```bash
-# Edit SPECS_VERSION in scripts/sync_specs.py, then:
-python scripts/sync_specs.py
+# Download the pinned version from @jambonz/schema:
+python scripts/sync_schema.py
+
+# Or copy from a local clone:
+python scripts/sync_schema.py --local /path/to/schema
 ```
 
 If a **new verb** was added (not just new properties), add one line to `verb_registry.py`:
@@ -153,8 +136,8 @@ pytest tests/unit/          # Fast unit tests (253)
 pytest tests/integration/   # Real server tests (26)
 pytest                      # All 279 tests
 
-# Sync verb spec from upstream
-python scripts/sync_specs.py
+# Sync schema from upstream
+python scripts/sync_schema.py
 ```
 
 ## License
