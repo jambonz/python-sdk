@@ -58,8 +58,8 @@ The SDK supports all 26+ jambonz verbs. Verb methods on VerbBuilder are **auto-g
 ### How verb generation works
 
 1. `verb_registry.py` defines which spec entries are verbs, their Python method names, JSON verb names, and any synonym transforms
-2. `verb_builder.py` loads `specs.json` at import time and generates a method for each registry entry
-3. Each generated method has typed parameters, docstrings, and required-field documentation — all derived from the spec
+2. `verb_builder.py` loads JSON Schema files from `schema/verbs/` at import time and generates a method for each registry entry
+3. Each generated method has typed parameters, docstrings, and required-field documentation — all derived from the schema
 4. To add a new verb: add one `VerbDef` entry in `verb_registry.py` — no other changes needed
 
 ### Verb List
@@ -80,24 +80,24 @@ Utility: `config`, `tag`, `dtmf`, `dub`, `message`, `alert`, `answer`, `leave`
 
 SIP verbs use underscores: `sip_decline()`, `sip_request()`, `sip_refer()` (maps to `sip:decline`, `sip:request`, `sip:refer` in JSON).
 
-## specs.json Management
+## JSON Schema Management
 
-The SDK bundles `specs.json` from `@jambonz/verb-specifications` (npm package / GitHub repo).
-The file lives at `src/jambonz_sdk/specs.json` and is included in the wheel.
+The SDK bundles JSON Schema files from `@jambonz/schema` (npm package / GitHub repo).
+Schema files live at `src/jambonz_sdk/schema/` and are included in the wheel.
 
-To update when the upstream spec changes:
+To update when the upstream schema changes:
 ```bash
-# From local sibling clone (default)
-python scripts/sync_specs.py
+# Download the pinned version
+python scripts/sync_schema.py
 
-# From GitHub main branch
-python scripts/sync_specs.py --github
+# Download a specific version
+python scripts/sync_schema.py v0.1.1
 
-# From a specific file
-python scripts/sync_specs.py /path/to/specs.json
+# Copy from a local directory
+python scripts/sync_schema.py --local /path/to/schema
 ```
 
-Source: https://github.com/jambonz/verb-specifications
+Source: https://github.com/jambonz/schema
 
 ## AI Agent Support
 

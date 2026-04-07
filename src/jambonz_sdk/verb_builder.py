@@ -1,7 +1,7 @@
 """VerbBuilder base class with auto-generated chainable verb methods.
 
-Methods are generated at import time from ``specs.json`` + the verb registry.
-When the spec changes, the SDK automatically picks up new parameters —
+Methods are generated at import time from JSON Schema files + the verb registry.
+When the schema changes, the SDK automatically picks up new parameters —
 no manual method signatures to maintain.
 
 Each generated method has a real ``inspect.Signature`` with typed parameters
@@ -13,98 +13,181 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+import sys
 from pathlib import Path
-from typing import Any, Self, Union
+from typing import Any, Union
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from jambonz_sdk.types.verbs import AnyVerb
 from jambonz_sdk.verb_registry import VERB_DEFS, VerbDef
 
 logger = logging.getLogger("jambonz_sdk.verb_builder")
 
-# ── Spec type → Python type mapping ────────────────────────────────
-# Used for both docstrings (human-readable) and runtime annotations (IDE).
+# ── JSON Schema type → Python type mapping ────────────────────────────
 
 _TYPE_ANNOTATION_MAP: dict[str, type | object] = {
     "string": str,
     "number": Union[int, float],
+    "integer": int,
     "boolean": bool,
     "object": dict,
     "array": list,
 }
 
+_TYPE_STR_MAP: dict[str, str] = {
+    "string": "str",
+    "number": "int | float",
+    "integer": "int",
+    "boolean": "bool",
+    "object": "dict[str, Any]",
+    "array": "list[Any]",
+}
 
-def _resolve_type(spec_type: Any) -> type | object:
-    """Convert a specs.json type descriptor to a Python type annotation."""
-    if isinstance(spec_type, str):
-        if spec_type.startswith("#"):
-            return dict
-        if "|" in spec_type:
-            parts = []
-            for t in spec_type.split("|"):
-                t = t.strip()
-                if t.startswith("#"):
-                    parts.append(dict)
-                else:
-                    resolved = _TYPE_ANNOTATION_MAP.get(t)
-                    if resolved is not None:
-                        if resolved is Union[int, float]:
-                            parts.extend([int, float])
-                        else:
-                            parts.append(resolved)
-                    else:
-                        parts.append(Any)
-            # Deduplicate while preserving order
-            seen: set[type | object] = set()
-            unique = []
-            for p in parts:
-                if p not in seen:
-                    seen.add(p)
-                    unique.append(p)
-            if len(unique) == 1:
-                return unique[0]
-            return Union[tuple(unique)]
-        return _TYPE_ANNOTATION_MAP.get(spec_type, Any)
-    if isinstance(spec_type, list):
-        return list
-    if isinstance(spec_type, dict):
-        return _TYPE_ANNOTATION_MAP.get(spec_type.get("type", ""), Any)
+
+def _resolve_type(prop_schema: Any) -> type | object:
+    """Convert a JSON Schema property definition to a Python type annotation."""
+    if isinstance(prop_schema, str):
+        # Backward compat: simple type string (shouldn't happen with JSON Schema)
+        return _TYPE_ANNOTATION_MAP.get(prop_schema, Any)
+
+    if not isinstance(prop_schema, dict):
+        return Any
+
+    # $ref → component reference → dict
+    if "$ref" in prop_schema:
+        return dict
+
+    # const → the type of the const value
+    if "const" in prop_schema:
+        val = prop_schema["const"]
+        return type(val)
+
+    # oneOf → union of the branch types
+    if "oneOf" in prop_schema:
+        parts: list[type | object] = []
+        for branch in prop_schema["oneOf"]:
+            resolved = _resolve_type(branch)
+            if resolved is Union[int, float]:
+                parts.extend([int, float])
+            elif resolved not in parts:
+                parts.append(resolved)
+        # Deduplicate while preserving order
+        seen: set[type | object] = set()
+        unique = []
+        for p in parts:
+            if p not in seen:
+                seen.add(p)
+                unique.append(p)
+        if len(unique) == 1:
+            return unique[0]
+        return Union[tuple(unique)]
+
+    # Simple type
+    schema_type = prop_schema.get("type")
+    if isinstance(schema_type, str):
+        return _TYPE_ANNOTATION_MAP.get(schema_type, Any)
+
+    # Array of types
+    if isinstance(schema_type, list):
+        parts = []
+        for t in schema_type:
+            resolved = _TYPE_ANNOTATION_MAP.get(t, Any)
+            if resolved is Union[int, float]:
+                parts.extend([int, float])
+            elif resolved not in parts:
+                parts.append(resolved)
+        if len(parts) == 1:
+            return parts[0]
+        return Union[tuple(parts)]
+
     return Any
 
 
-def _python_type_str(spec_type: Any) -> str:
-    """Convert a specs.json type descriptor to a human-readable type string."""
-    _str_map = {
-        "string": "str",
-        "number": "int | float",
-        "boolean": "bool",
-        "object": "dict[str, Any]",
-        "array": "list[Any]",
-    }
-    if isinstance(spec_type, str):
-        if spec_type.startswith("#"):
-            return "dict[str, Any]"
-        if "|" in spec_type:
-            parts = [_str_map.get(t.strip(), "Any") if not t.strip().startswith("#") else "dict[str, Any]"
-                     for t in spec_type.split("|")]
-            return " | ".join(dict.fromkeys(parts))
-        return _str_map.get(spec_type, "Any")
-    if isinstance(spec_type, list):
-        return "list[Any]"
-    if isinstance(spec_type, dict):
-        return _str_map.get(spec_type.get("type", ""), "Any")
+def _python_type_str(prop_schema: Any) -> str:
+    """Convert a JSON Schema property definition to a human-readable type string."""
+    if isinstance(prop_schema, str):
+        return _TYPE_STR_MAP.get(prop_schema, "Any")
+
+    if not isinstance(prop_schema, dict):
+        return "Any"
+
+    if "$ref" in prop_schema:
+        return "dict[str, Any]"
+
+    if "const" in prop_schema:
+        return repr(type(prop_schema["const"]).__name__)
+
+    if "oneOf" in prop_schema:
+        parts = [_python_type_str(branch) for branch in prop_schema["oneOf"]]
+        return " | ".join(dict.fromkeys(parts))
+
+    schema_type = prop_schema.get("type")
+    if isinstance(schema_type, str):
+        return _TYPE_STR_MAP.get(schema_type, "Any")
+    if isinstance(schema_type, list):
+        parts = [_TYPE_STR_MAP.get(t, "Any") for t in schema_type]
+        return " | ".join(dict.fromkeys(parts))
+
     return "Any"
 
 
-# ── Load specs ──────────────────────────────────────────────────────
+# ── Load JSON Schemas ──────────────────────────────────────────────────
 
-def _load_specs() -> dict[str, Any]:
-    """Load specs.json bundled alongside this package."""
-    specs_path = Path(__file__).resolve().parent / "specs.json"
-    with specs_path.open() as f:
-        return json.load(f)
+def _load_schemas() -> dict[str, Any]:
+    """Load verb JSON Schemas bundled alongside this package.
+
+    Returns a dict mapping verb spec names (e.g. 'say', 'sip:decline')
+    to their schema dicts, with a 'properties' key and optionally 'required'.
+    """
+    schema_dir = Path(__file__).resolve().parent / "schema" / "verbs"
+    schemas: dict[str, Any] = {}
+
+    if not schema_dir.is_dir():
+        logger.warning("Schema directory not found: %s", schema_dir)
+        return schemas
+
+    for schema_file in sorted(schema_dir.glob("*.schema.json")):
+        with schema_file.open() as f:
+            schema = json.load(f)
+
+        # Derive the spec name from the $id or filename
+        schema_id = schema.get("$id", "")
+        if schema_id:
+            # e.g. "https://jambonz.org/schema/verbs/say" → "say"
+            # e.g. "https://jambonz.org/schema/verbs/sip:decline" → "sip:decline"
+            spec_name = schema_id.rsplit("/", 1)[-1]
+        else:
+            # Fallback: filename without .schema.json
+            spec_name = schema_file.stem.replace(".schema", "")
+
+        # Collect properties, skipping 'verb' (it's a const, not a user param)
+        properties = {}
+        for prop_name, prop_def in schema.get("properties", {}).items():
+            if prop_name == "verb":
+                continue
+            properties[prop_name] = prop_def
+
+        # Handle allOf (used by vendor-specific s2s verbs that extend llm-base)
+        for entry in schema.get("allOf", []):
+            if "properties" in entry:
+                for prop_name, prop_def in entry["properties"].items():
+                    if prop_name == "verb":
+                        continue
+                    properties[prop_name] = prop_def
+
+        schemas[spec_name] = {
+            "properties": properties,
+            "required": schema.get("required", []),
+        }
+
+    return schemas
 
 
-_SPECS: dict[str, Any] = _load_specs()
+_SPECS: dict[str, Any] = _load_schemas()
 
 
 # ── Method factory ──────────────────────────────────────────────────
@@ -186,7 +269,7 @@ def _make_verb_method(verb_def: VerbDef, spec: dict[str, Any]) -> Any:
 class VerbBuilder:
     """Builds an ordered list of jambonz verbs using a fluent API.
 
-    All verb methods are auto-generated from ``specs.json`` and accept
+    All verb methods are auto-generated from JSON Schema files and accept
     keyword arguments matching the verb's specification. Methods return
     ``self`` for chaining.
 
@@ -216,12 +299,12 @@ class VerbBuilder:
 # ── Attach generated methods to VerbBuilder ─────────────────────────
 
 def _build_methods() -> None:
-    """Generate and attach verb methods to VerbBuilder from specs + registry."""
+    """Generate and attach verb methods to VerbBuilder from schemas + registry."""
     for verb_def in VERB_DEFS:
         spec = _SPECS.get(verb_def.spec_name)
         if spec is None:
             logger.warning(
-                "Spec '%s' not found in specs.json for method '%s' — skipping",
+                "Schema for '%s' not found for method '%s' — skipping",
                 verb_def.spec_name,
                 verb_def.method_name,
             )

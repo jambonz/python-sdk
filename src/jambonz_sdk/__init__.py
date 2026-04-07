@@ -39,11 +39,13 @@ __version__ = "0.1.0"
 
 # Re-export main classes for convenience
 from jambonz_sdk.client import JambonzClient
+from jambonz_sdk.validator import JambonzValidator
 from jambonz_sdk.verb_builder import VerbBuilder
 from jambonz_sdk.webhook import WebhookResponse
 
 __all__ = [
     "JambonzClient",
+    "JambonzValidator",
     "VerbBuilder",
     "WebhookResponse",
     "__version__",
