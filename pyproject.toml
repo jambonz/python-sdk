@@ -24,6 +24,7 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp>=3.9",
+    "jsonschema>=4.20",
 ]
 
 [project.urls]
@@ -46,7 +47,7 @@ dev = [
 packages = ["src/jambonz_sdk"]
 
 [tool.hatch.build]
-include = ["src/jambonz_sdk/**/*.py", "src/jambonz_sdk/**/*.pyi", "src/jambonz_sdk/specs.json"]
+include = ["src/jambonz_sdk/**/*.py", "src/jambonz_sdk/**/*.pyi", "src/jambonz_sdk/schema/**/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
