@@ -103,7 +103,6 @@ def generate() -> str:
         "",
         "from jambonz_sdk.types.verbs import AnyVerb",
         "",
-        "",
         "class VerbBuilder:",
         "    _verbs: list[AnyVerb]",
         "",
