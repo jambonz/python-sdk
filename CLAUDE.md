@@ -23,7 +23,7 @@ src/jambonz_sdk/
 │   ├── verbs.py         # All 26+ verb TypedDicts
 │   ├── rest.py          # REST API request/response types
 │   └── session.py       # Call session & WebSocket message types
-├── verb_builder.py      # VerbBuilder — methods auto-generated from specs.json
+├── verb_builder.py      # VerbBuilder — methods auto-generated from JSON Schema
 ├── verb_registry.py     # Verb definitions: maps spec entries → Python methods
 ├── webhook/
 │   ├── __init__.py
@@ -48,12 +48,12 @@ src/jambonz_sdk/
 - **Transport-agnostic verb building**: Same verb methods on both `WebhookResponse` and `Session`
 - **Fluent/chainable API**: All verb methods return `self` for method chaining
 - **TypedDict for verb schemas**: Type-safe verb construction matching JSON schemas exactly
-- **Auto-generated verb methods**: VerbBuilder methods are generated at import time from `specs.json` + `verb_registry.py` — when the spec changes, the SDK automatically picks up new parameters
+- **Auto-generated verb methods**: VerbBuilder methods are generated at import time from JSON Schema files (`@jambonz/schema`) + `verb_registry.py` — when the schema changes, the SDK automatically picks up new parameters
 - **aiohttp for both HTTP and WebSocket**: Single dependency for REST client and WS transport
 
 ## Verb System
 
-The SDK supports all 26+ jambonz verbs. Verb methods on VerbBuilder are **auto-generated** from the shared `specs.json` (in `/Users/xhoaluu/jambonz/verb-specifications/specs.json`).
+The SDK supports all 26+ jambonz verbs. Verb methods on VerbBuilder are **auto-generated** from JSON Schema files bundled from [`@jambonz/schema`](https://github.com/jambonz/schema).
 
 ### How verb generation works
 

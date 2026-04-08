@@ -1,6 +1,6 @@
 """Verb registry — the single source of truth for mapping spec entries to SDK methods.
 
-This module defines which entries in ``specs.json`` are top-level verbs
+This module defines which entries in the JSON Schema files are top-level verbs
 (as opposed to nested component types), their Python method names, docstrings,
 and any synonym/alias transforms.
 
@@ -19,7 +19,7 @@ class VerbDef:
     """Definition of a single verb method on VerbBuilder.
 
     Attributes:
-        spec_name: The key in specs.json (e.g., ``"say"``, ``"sip:decline"``).
+        spec_name: The schema identifier (e.g., ``"say"``, ``"sip:decline"``).
         method_name: The Python method name (e.g., ``"say"``, ``"sip_decline"``).
         json_verb: The ``verb`` value in the output JSON. Defaults to ``spec_name``.
         doc: One-line docstring for the generated method.

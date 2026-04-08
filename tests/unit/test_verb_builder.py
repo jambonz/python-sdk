@@ -2,13 +2,13 @@
 
 These tests validate that:
 1. Every verb in the registry has a corresponding method on VerbBuilder
-2. Every method produces JSON output matching the specs.json contract
+2. Every method produces JSON output matching the JSON Schema contract
 3. Verb synonyms and injected properties work correctly
 4. The builder's chaining and reset behavior is correct
-5. Property names in output match specs.json exactly (camelCase preserved)
+5. Property names in output match JSON Schema exactly (camelCase preserved)
 6. The 'from' → 'from_' Python mapping works for the message verb
 
-Tests are driven by specs.json — if a new property is added to a verb spec,
+Tests are driven by JSON Schema — if a new property is added to a verb schema,
 these tests verify the SDK can pass it through correctly.
 """
 
@@ -59,10 +59,10 @@ class TestAllVerbsRegistered:
         assert verbs[0]["verb"] == verb_def.json_verb
 
 
-# ── Spec-driven: output properties must match specs.json ───────────
+# ── Spec-driven: output properties must match JSON Schema ─────────
 
 class TestVerbOutputMatchesSpec:
-    """For each verb, passing a property defined in specs.json must
+    """For each verb, passing a property defined in the JSON Schema must
     appear in the output JSON with the exact same key name."""
 
     @pytest.mark.parametrize(
@@ -312,7 +312,7 @@ class TestRealisticFlows:
 # ── Helpers ─────────────────────────────────────────────────────────
 
 def _dummy_value(spec_type):
-    """Generate a dummy value matching a specs.json type descriptor."""
+    """Generate a dummy value matching a JSON Schema type descriptor."""
     if isinstance(spec_type, str):
         if spec_type.startswith("#"):
             return {}

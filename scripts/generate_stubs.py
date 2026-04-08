@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Generate verb_builder.pyi stub file from specs.json + verb_registry.
+"""Generate verb_builder.pyi stub file from JSON Schema + verb_registry.
 
 This creates a .pyi type stub that IDEs (VS Code Pylance, PyCharm, mypy)
 read for static type checking and autocomplete. Run this after syncing
-specs.json or updating verb_registry.py.
+the schema or updating verb_registry.py.
 
 Usage:
     python scripts/generate_stubs.py
@@ -19,10 +19,10 @@ sys.path.insert(0, str(SRC_DIR))
 
 from jambonz_sdk.verb_registry import VERB_DEFS
 
-SPECS_PATH = SRC_DIR / "jambonz_sdk" / "specs.json"
+SCHEMA_DIR = SRC_DIR / "jambonz_sdk" / "schema" / "verbs"
 STUB_PATH = SRC_DIR / "jambonz_sdk" / "verb_builder.pyi"
 
-# Maps specs.json type strings to Python type annotation strings for .pyi
+# Maps JSON Schema type strings to Python type annotation strings for .pyi
 TYPE_MAP = {
     "string": "str",
     "number": "int | float",
@@ -33,7 +33,7 @@ TYPE_MAP = {
 
 
 def resolve_type(spec_type) -> str:
-    """Convert a specs.json type descriptor to a .pyi type string."""
+    """Convert a JSON Schema type descriptor to a .pyi type string."""
     if isinstance(spec_type, str):
         if spec_type.startswith("#"):
             return "dict[str, Any]"
@@ -61,9 +61,37 @@ def resolve_type(spec_type) -> str:
     return "Any"
 
 
+def _load_schemas() -> dict:
+    """Load verb JSON Schemas from the bundled schema directory."""
+    schemas: dict = {}
+    for schema_file in sorted(SCHEMA_DIR.glob("*.schema.json")):
+        with schema_file.open() as f:
+            schema = json.load(f)
+        schema_id = schema.get("$id", "")
+        if schema_id:
+            spec_name = schema_id.rsplit("/", 1)[-1]
+        else:
+            spec_name = schema_file.stem.replace(".schema", "")
+        properties = {}
+        for prop_name, prop_def in schema.get("properties", {}).items():
+            if prop_name == "verb":
+                continue
+            properties[prop_name] = prop_def
+        for entry in schema.get("allOf", []):
+            if "properties" in entry:
+                for prop_name, prop_def in entry["properties"].items():
+                    if prop_name == "verb":
+                        continue
+                    properties[prop_name] = prop_def
+        schemas[spec_name] = {
+            "properties": properties,
+            "required": schema.get("required", []),
+        }
+    return schemas
+
+
 def generate() -> str:
-    with SPECS_PATH.open() as f:
-        specs = json.load(f)
+    specs = _load_schemas()
 
     lines = [
         '"""Auto-generated type stubs for VerbBuilder.',
@@ -74,7 +102,6 @@ def generate() -> str:
         "from typing import Any, Self",
         "",
         "from jambonz_sdk.types.verbs import AnyVerb",
-        "",
         "",
         "class VerbBuilder:",
         "    _verbs: list[AnyVerb]",
