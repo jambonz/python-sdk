@@ -410,9 +410,9 @@ jambonz.say(text="Connecting you now.").dial(
 
 ## SDK Architecture
 
-The SDK auto-generates verb methods from `specs.json` (from `@jambonz/verb-specifications`). When the spec changes, the SDK automatically picks up new parameters:
+The SDK auto-generates verb methods from JSON Schema files (from `@jambonz/schema`). When the schema changes, the SDK automatically picks up new parameters:
 
-1. `specs.json` — bundled verb/component specifications (synced from upstream)
+1. `schema/verbs/*.schema.json` — bundled verb schemas (synced from upstream)
 2. `verb_registry.py` — maps spec entries to Python methods + synonyms
 3. `verb_builder.py` — generates methods at import time from specs + registry
 4. `WebhookResponse` and `Session` both extend `VerbBuilder`

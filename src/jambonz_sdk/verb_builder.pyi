@@ -7,6 +7,7 @@ from typing import Any, Self
 
 from jambonz_sdk.types.verbs import AnyVerb
 
+
 class VerbBuilder:
     _verbs: list[AnyVerb]
 
@@ -16,11 +17,11 @@ class VerbBuilder:
     def say(
         self,
         id: str = ...,
-        text: str | list[Any] = ...,
+        text: Any = ...,
         instructions: str = ...,
         stream: bool = ...,
-        loop: int | float | str = ...,
-        synthesizer: dict[str, Any] = ...,
+        loop: Any = ...,
+        synthesizer: Any = ...,
         earlyMedia: bool = ...,
         disableTtsCache: bool = ...,
         closeStreamOnEmpty: bool = ...,
@@ -30,11 +31,11 @@ class VerbBuilder:
 
         Args:
             id: str
-            text: str | list[Any]
+            text: Any
             instructions: str
             stream: bool
-            loop: int | float | str
-            synthesizer: dict[str, Any]
+            loop: Any
+            synthesizer: Any
             earlyMedia: bool
             disableTtsCache: bool
             closeStreamOnEmpty: bool
@@ -47,12 +48,12 @@ class VerbBuilder:
     def play(
         self,
         id: str = ...,
-        url: str | list[Any] = ...,
-        loop: int | float | str = ...,
+        url: Any = ...,
+        loop: Any = ...,
         earlyMedia: bool = ...,
-        seekOffset: int | float | str = ...,
-        timeoutSecs: int | float | str = ...,
-        actionHook: dict[str, Any] | str = ...,
+        seekOffset: Any = ...,
+        timeoutSecs: Any = ...,
+        actionHook: Any = ...,
         **kwargs: Any,
     ) -> Self:
         """Play an audio file from a URL.
@@ -61,12 +62,12 @@ class VerbBuilder:
 
         Args:
             id: str
-            url: str | list[Any] (required)
-            loop: int | float | str
+            url: Any (required)
+            loop: Any
             earlyMedia: bool
-            seekOffset: int | float | str
-            timeoutSecs: int | float | str
-            actionHook: dict[str, Any] | str
+            seekOffset: Any
+            timeoutSecs: Any
+            actionHook: Any
 
         Returns:
             self for chaining.
@@ -76,50 +77,50 @@ class VerbBuilder:
     def gather(
         self,
         id: str = ...,
-        actionHook: dict[str, Any] | str = ...,
-        finishOnKey: str = ...,
+        actionHook: Any = ...,
         input: list[Any] = ...,
+        finishOnKey: str = ...,
         numDigits: int | float = ...,
         minDigits: int | float = ...,
         maxDigits: int | float = ...,
         interDigitTimeout: int | float = ...,
-        partialResultHook: dict[str, Any] | str = ...,
         speechTimeout: int | float = ...,
+        timeout: int | float = ...,
+        partialResultHook: Any = ...,
         listenDuringPrompt: bool = ...,
         dtmfBargein: bool = ...,
         bargein: bool = ...,
         minBargeinWordCount: int | float = ...,
-        timeout: int | float = ...,
-        recognizer: dict[str, Any] = ...,
-        play: dict[str, Any] = ...,
+        recognizer: Any = ...,
         say: dict[str, Any] = ...,
-        fillerNoise: dict[str, Any] = ...,
-        actionHookDelayAction: dict[str, Any] = ...,
+        play: dict[str, Any] = ...,
+        fillerNoise: Any = ...,
+        actionHookDelayAction: Any = ...,
         **kwargs: Any,
     ) -> Self:
         """Collect speech (STT) and/or DTMF input.
 
         Args:
             id: str
-            actionHook: dict[str, Any] | str
-            finishOnKey: str
+            actionHook: Any
             input: list[Any]
+            finishOnKey: str
             numDigits: int | float
             minDigits: int | float
             maxDigits: int | float
             interDigitTimeout: int | float
-            partialResultHook: dict[str, Any] | str
             speechTimeout: int | float
+            timeout: int | float
+            partialResultHook: Any
             listenDuringPrompt: bool
             dtmfBargein: bool
             bargein: bool
             minBargeinWordCount: int | float
-            timeout: int | float
-            recognizer: dict[str, Any]
-            play: dict[str, Any]
+            recognizer: Any
             say: dict[str, Any]
-            fillerNoise: dict[str, Any]
-            actionHookDelayAction: dict[str, Any]
+            play: dict[str, Any]
+            fillerNoise: Any
+            actionHookDelayAction: Any
 
         Returns:
             self for chaining.
@@ -128,17 +129,6 @@ class VerbBuilder:
 
     def openai_s2s(
         self,
-        id: str = ...,
-        vendor: str = ...,
-        model: str = ...,
-        auth: dict[str, Any] = ...,
-        connectOptions: dict[str, Any] = ...,
-        mcpServers: list[Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
-        toolHook: dict[str, Any] | str = ...,
-        events: list[Any] = ...,
-        llmOptions: dict[str, Any] = ...,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to OpenAI for real-time voice conversation.
@@ -146,17 +136,6 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
-            id: str
-            vendor: str (required)
-            model: str
-            auth: dict[str, Any]
-            connectOptions: dict[str, Any]
-            mcpServers: list[Any]
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
-            toolHook: dict[str, Any] | str
-            events: list[Any]
-            llmOptions: dict[str, Any] (required)
 
         Returns:
             self for chaining.
@@ -165,17 +144,6 @@ class VerbBuilder:
 
     def google_s2s(
         self,
-        id: str = ...,
-        vendor: str = ...,
-        model: str = ...,
-        auth: dict[str, Any] = ...,
-        connectOptions: dict[str, Any] = ...,
-        mcpServers: list[Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
-        toolHook: dict[str, Any] | str = ...,
-        events: list[Any] = ...,
-        llmOptions: dict[str, Any] = ...,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to Google for real-time voice conversation.
@@ -183,17 +151,6 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
-            id: str
-            vendor: str (required)
-            model: str
-            auth: dict[str, Any]
-            connectOptions: dict[str, Any]
-            mcpServers: list[Any]
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
-            toolHook: dict[str, Any] | str
-            events: list[Any]
-            llmOptions: dict[str, Any] (required)
 
         Returns:
             self for chaining.
@@ -202,17 +159,6 @@ class VerbBuilder:
 
     def deepgram_s2s(
         self,
-        id: str = ...,
-        vendor: str = ...,
-        model: str = ...,
-        auth: dict[str, Any] = ...,
-        connectOptions: dict[str, Any] = ...,
-        mcpServers: list[Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
-        toolHook: dict[str, Any] | str = ...,
-        events: list[Any] = ...,
-        llmOptions: dict[str, Any] = ...,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to Deepgram for real-time voice conversation.
@@ -220,17 +166,6 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
-            id: str
-            vendor: str (required)
-            model: str
-            auth: dict[str, Any]
-            connectOptions: dict[str, Any]
-            mcpServers: list[Any]
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
-            toolHook: dict[str, Any] | str
-            events: list[Any]
-            llmOptions: dict[str, Any] (required)
 
         Returns:
             self for chaining.
@@ -239,17 +174,6 @@ class VerbBuilder:
 
     def elevenlabs_s2s(
         self,
-        id: str = ...,
-        vendor: str = ...,
-        model: str = ...,
-        auth: dict[str, Any] = ...,
-        connectOptions: dict[str, Any] = ...,
-        mcpServers: list[Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
-        toolHook: dict[str, Any] | str = ...,
-        events: list[Any] = ...,
-        llmOptions: dict[str, Any] = ...,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to ElevenLabs Conversational AI agent.
@@ -257,17 +181,6 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
-            id: str
-            vendor: str (required)
-            model: str
-            auth: dict[str, Any]
-            connectOptions: dict[str, Any]
-            mcpServers: list[Any]
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
-            toolHook: dict[str, Any] | str
-            events: list[Any]
-            llmOptions: dict[str, Any] (required)
 
         Returns:
             self for chaining.
@@ -276,17 +189,6 @@ class VerbBuilder:
 
     def ultravox_s2s(
         self,
-        id: str = ...,
-        vendor: str = ...,
-        model: str = ...,
-        auth: dict[str, Any] = ...,
-        connectOptions: dict[str, Any] = ...,
-        mcpServers: list[Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
-        toolHook: dict[str, Any] | str = ...,
-        events: list[Any] = ...,
-        llmOptions: dict[str, Any] = ...,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to Ultravox for real-time voice conversation.
@@ -294,17 +196,6 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
-            id: str
-            vendor: str (required)
-            model: str
-            auth: dict[str, Any]
-            connectOptions: dict[str, Any]
-            mcpServers: list[Any]
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
-            toolHook: dict[str, Any] | str
-            events: list[Any]
-            llmOptions: dict[str, Any] (required)
 
         Returns:
             self for chaining.
@@ -313,17 +204,6 @@ class VerbBuilder:
 
     def s2s(
         self,
-        id: str = ...,
-        vendor: str = ...,
-        model: str = ...,
-        auth: dict[str, Any] = ...,
-        connectOptions: dict[str, Any] = ...,
-        mcpServers: list[Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
-        toolHook: dict[str, Any] | str = ...,
-        events: list[Any] = ...,
-        llmOptions: dict[str, Any] = ...,
         **kwargs: Any,
     ) -> Self:
         """Generic S2S verb (use when vendor is determined at runtime).
@@ -331,17 +211,6 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
-            id: str
-            vendor: str (required)
-            model: str
-            auth: dict[str, Any]
-            connectOptions: dict[str, Any]
-            mcpServers: list[Any]
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
-            toolHook: dict[str, Any] | str
-            events: list[Any]
-            llmOptions: dict[str, Any] (required)
 
         Returns:
             self for chaining.
@@ -350,17 +219,6 @@ class VerbBuilder:
 
     def llm(
         self,
-        id: str = ...,
-        vendor: str = ...,
-        model: str = ...,
-        auth: dict[str, Any] = ...,
-        connectOptions: dict[str, Any] = ...,
-        mcpServers: list[Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
-        toolHook: dict[str, Any] | str = ...,
-        events: list[Any] = ...,
-        llmOptions: dict[str, Any] = ...,
         **kwargs: Any,
     ) -> Self:
         """Legacy LLM verb (prefer s2s or vendor-specific shortcuts).
@@ -368,17 +226,6 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
-            id: str
-            vendor: str (required)
-            model: str
-            auth: dict[str, Any]
-            connectOptions: dict[str, Any]
-            mcpServers: list[Any]
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
-            toolHook: dict[str, Any] | str
-            events: list[Any]
-            llmOptions: dict[str, Any] (required)
 
         Returns:
             self for chaining.
@@ -388,15 +235,15 @@ class VerbBuilder:
     def dialogflow(
         self,
         id: str = ...,
-        credentials: dict[str, Any] | str = ...,
+        credentials: Any = ...,
         project: str = ...,
         agent: str = ...,
         environment: str = ...,
         region: str = ...,
         model: str = ...,
         lang: str = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
+        actionHook: Any = ...,
+        eventHook: Any = ...,
         events: list[Any] = ...,
         welcomeEvent: str = ...,
         welcomeEventParams: dict[str, Any] = ...,
@@ -404,7 +251,7 @@ class VerbBuilder:
         noInputEvent: str = ...,
         passDtmfAsTextInput: bool = ...,
         thinkingMusic: str = ...,
-        tts: dict[str, Any] = ...,
+        tts: Any = ...,
         bargein: bool = ...,
         queryInput: dict[str, Any] = ...,
         **kwargs: Any,
@@ -415,15 +262,15 @@ class VerbBuilder:
 
         Args:
             id: str
-            credentials: dict[str, Any] | str (required)
+            credentials: Any (required)
             project: str (required)
             agent: str
             environment: str
             region: str
             model: str
             lang: str (required)
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
+            actionHook: Any
+            eventHook: Any
             events: list[Any]
             welcomeEvent: str
             welcomeEventParams: dict[str, Any]
@@ -431,7 +278,7 @@ class VerbBuilder:
             noInputEvent: str
             passDtmfAsTextInput: bool
             thinkingMusic: str
-            tts: dict[str, Any]
+            tts: Any
             bargein: bool
             queryInput: dict[str, Any]
 
@@ -443,19 +290,19 @@ class VerbBuilder:
     def pipeline(
         self,
         id: str = ...,
-        stt: dict[str, Any] = ...,
-        tts: dict[str, Any] = ...,
-        llm: dict[str, Any] = ...,
-        turnDetection: str | dict[str, Any] = ...,
+        stt: Any = ...,
+        tts: Any = ...,
+        turnDetection: Any = ...,
         bargeIn: dict[str, Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
-        toolHook: dict[str, Any] | str = ...,
+        noResponseTimeout: int | float = ...,
+        llm: dict[str, Any] = ...,
+        actionHook: Any = ...,
+        eventHook: Any = ...,
+        toolHook: Any = ...,
         greeting: bool = ...,
         earlyGeneration: bool = ...,
-        noiseIsolation: str | dict[str, Any] = ...,
+        noiseIsolation: Any = ...,
         mcpServers: list[Any] = ...,
-        noResponseTimeout: int | float = ...,
         **kwargs: Any,
     ) -> Self:
         """Integrated STT → LLM → TTS voice AI pipeline.
@@ -464,19 +311,19 @@ class VerbBuilder:
 
         Args:
             id: str
-            stt: dict[str, Any]
-            tts: dict[str, Any]
-            llm: dict[str, Any] (required)
-            turnDetection: str | dict[str, Any]
+            stt: Any
+            tts: Any
+            turnDetection: Any
             bargeIn: dict[str, Any]
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
-            toolHook: dict[str, Any] | str
+            noResponseTimeout: int | float
+            llm: dict[str, Any] (required)
+            actionHook: Any
+            eventHook: Any
+            toolHook: Any
             greeting: bool
             earlyGeneration: bool
-            noiseIsolation: str | dict[str, Any]
+            noiseIsolation: Any
             mcpServers: list[Any]
-            noResponseTimeout: int | float
 
         Returns:
             self for chaining.
@@ -486,21 +333,20 @@ class VerbBuilder:
     def listen(
         self,
         id: str = ...,
-        actionHook: dict[str, Any] | str = ...,
-        auth: dict[str, Any] = ...,
+        url: str = ...,
+        actionHook: Any = ...,
+        wsAuth: Any = ...,
+        mixType: str = ...,
+        metadata: dict[str, Any] = ...,
+        sampleRate: int | float = ...,
         finishOnKey: str = ...,
         maxLength: int | float = ...,
-        metadata: dict[str, Any] = ...,
-        mixType: str = ...,
         passDtmf: bool = ...,
         playBeep: bool = ...,
         disableBidirectionalAudio: bool = ...,
-        bidirectionalAudio: dict[str, Any] = ...,
-        sampleRate: int | float = ...,
+        bidirectionalAudio: Any = ...,
         timeout: int | float = ...,
-        transcribe: dict[str, Any] = ...,
-        url: str = ...,
-        wsAuth: dict[str, Any] = ...,
+        transcribe: Any = ...,
         earlyMedia: bool = ...,
         channel: int | float = ...,
         **kwargs: Any,
@@ -511,21 +357,20 @@ class VerbBuilder:
 
         Args:
             id: str
-            actionHook: dict[str, Any] | str
-            auth: dict[str, Any]
+            url: str (required)
+            actionHook: Any
+            wsAuth: Any
+            mixType: str
+            metadata: dict[str, Any]
+            sampleRate: int | float
             finishOnKey: str
             maxLength: int | float
-            metadata: dict[str, Any]
-            mixType: str
             passDtmf: bool
             playBeep: bool
             disableBidirectionalAudio: bool
-            bidirectionalAudio: dict[str, Any]
-            sampleRate: int | float
+            bidirectionalAudio: Any
             timeout: int | float
-            transcribe: dict[str, Any]
-            url: str (required)
-            wsAuth: dict[str, Any]
+            transcribe: Any
             earlyMedia: bool
             channel: int | float
 
@@ -537,21 +382,20 @@ class VerbBuilder:
     def stream(
         self,
         id: str = ...,
-        actionHook: dict[str, Any] | str = ...,
-        auth: dict[str, Any] = ...,
+        url: str = ...,
+        actionHook: Any = ...,
+        wsAuth: Any = ...,
+        mixType: str = ...,
+        metadata: dict[str, Any] = ...,
+        sampleRate: int | float = ...,
         finishOnKey: str = ...,
         maxLength: int | float = ...,
-        metadata: dict[str, Any] = ...,
-        mixType: str = ...,
         passDtmf: bool = ...,
         playBeep: bool = ...,
         disableBidirectionalAudio: bool = ...,
-        bidirectionalAudio: dict[str, Any] = ...,
-        sampleRate: int | float = ...,
+        bidirectionalAudio: Any = ...,
         timeout: int | float = ...,
-        transcribe: dict[str, Any] = ...,
-        url: str = ...,
-        wsAuth: dict[str, Any] = ...,
+        transcribe: Any = ...,
         earlyMedia: bool = ...,
         channel: int | float = ...,
         **kwargs: Any,
@@ -562,21 +406,20 @@ class VerbBuilder:
 
         Args:
             id: str
-            actionHook: dict[str, Any] | str
-            auth: dict[str, Any]
+            url: str (required)
+            actionHook: Any
+            wsAuth: Any
+            mixType: str
+            metadata: dict[str, Any]
+            sampleRate: int | float
             finishOnKey: str
             maxLength: int | float
-            metadata: dict[str, Any]
-            mixType: str
             passDtmf: bool
             playBeep: bool
             disableBidirectionalAudio: bool
-            bidirectionalAudio: dict[str, Any]
-            sampleRate: int | float
+            bidirectionalAudio: Any
             timeout: int | float
-            transcribe: dict[str, Any]
-            url: str (required)
-            wsAuth: dict[str, Any]
+            transcribe: Any
             earlyMedia: bool
             channel: int | float
 
@@ -588,9 +431,10 @@ class VerbBuilder:
     def transcribe(
         self,
         id: str = ...,
+        enable: bool = ...,
         transcriptionHook: str = ...,
         translationHook: str = ...,
-        recognizer: dict[str, Any] = ...,
+        recognizer: Any = ...,
         earlyMedia: bool = ...,
         channel: int | float = ...,
         **kwargs: Any,
@@ -599,9 +443,10 @@ class VerbBuilder:
 
         Args:
             id: str
+            enable: bool
             transcriptionHook: str
             translationHook: str
-            recognizer: dict[str, Any]
+            recognizer: Any
             earlyMedia: bool
             channel: int | float
 
@@ -613,28 +458,28 @@ class VerbBuilder:
     def dial(
         self,
         id: str = ...,
-        actionHook: dict[str, Any] | str = ...,
-        onHoldHook: dict[str, Any] | str = ...,
+        target: list[Any] = ...,
+        actionHook: Any = ...,
+        onHoldHook: Any = ...,
         answerOnBridge: bool = ...,
         callerId: str = ...,
         callerName: str = ...,
-        confirmHook: dict[str, Any] | str = ...,
-        referHook: dict[str, Any] | str = ...,
+        confirmHook: Any = ...,
+        referHook: Any = ...,
         dialMusic: str = ...,
-        dtmfCapture: dict[str, Any] = ...,
-        dtmfHook: dict[str, Any] | str = ...,
+        dtmfCapture: Any = ...,
+        dtmfHook: Any = ...,
         headers: dict[str, Any] = ...,
         anchorMedia: bool = ...,
         exitMediaPath: bool = ...,
-        boostAudioSignal: int | float | str = ...,
+        boostAudioSignal: Any = ...,
         listen: dict[str, Any] = ...,
         stream: dict[str, Any] = ...,
-        target: list[Any] = ...,
+        transcribe: dict[str, Any] = ...,
         timeLimit: int | float = ...,
         timeout: int | float = ...,
         proxy: str = ...,
-        transcribe: dict[str, Any] = ...,
-        amd: dict[str, Any] = ...,
+        amd: Any = ...,
         dub: list[Any] = ...,
         tag: dict[str, Any] = ...,
         forwardPAI: bool = ...,
@@ -646,28 +491,28 @@ class VerbBuilder:
 
         Args:
             id: str
-            actionHook: dict[str, Any] | str
-            onHoldHook: dict[str, Any] | str
+            target: list[Any] (required)
+            actionHook: Any
+            onHoldHook: Any
             answerOnBridge: bool
             callerId: str
             callerName: str
-            confirmHook: dict[str, Any] | str
-            referHook: dict[str, Any] | str
+            confirmHook: Any
+            referHook: Any
             dialMusic: str
-            dtmfCapture: dict[str, Any]
-            dtmfHook: dict[str, Any] | str
+            dtmfCapture: Any
+            dtmfHook: Any
             headers: dict[str, Any]
             anchorMedia: bool
             exitMediaPath: bool
-            boostAudioSignal: int | float | str
+            boostAudioSignal: Any
             listen: dict[str, Any]
             stream: dict[str, Any]
-            target: list[Any] (required)
+            transcribe: dict[str, Any]
             timeLimit: int | float
             timeout: int | float
             proxy: str
-            transcribe: dict[str, Any]
-            amd: dict[str, Any]
+            amd: Any
             dub: list[Any]
             tag: dict[str, Any]
             forwardPAI: bool
@@ -689,11 +534,11 @@ class VerbBuilder:
         endConferenceDuration: int | float = ...,
         maxParticipants: int | float = ...,
         joinMuted: bool = ...,
-        actionHook: dict[str, Any] | str = ...,
-        waitHook: dict[str, Any] | str = ...,
+        actionHook: Any = ...,
+        waitHook: Any = ...,
         statusEvents: list[Any] = ...,
-        statusHook: dict[str, Any] | str = ...,
-        enterHook: dict[str, Any] | str = ...,
+        statusHook: Any = ...,
+        enterHook: Any = ...,
         record: dict[str, Any] = ...,
         listen: dict[str, Any] = ...,
         distributeDtmf: bool = ...,
@@ -714,11 +559,11 @@ class VerbBuilder:
             endConferenceDuration: int | float
             maxParticipants: int | float
             joinMuted: bool
-            actionHook: dict[str, Any] | str
-            waitHook: dict[str, Any] | str
+            actionHook: Any
+            waitHook: Any
             statusEvents: list[Any]
-            statusHook: dict[str, Any] | str
-            enterHook: dict[str, Any] | str
+            statusHook: Any
+            enterHook: Any
             record: dict[str, Any]
             listen: dict[str, Any]
             distributeDtmf: bool
@@ -732,10 +577,9 @@ class VerbBuilder:
         self,
         id: str = ...,
         name: str = ...,
-        actionHook: dict[str, Any] | str = ...,
-        waitHook: dict[str, Any] | str = ...,
+        actionHook: Any = ...,
+        waitHook: Any = ...,
         priority: int | float = ...,
-        _: dict[str, Any] = ...,
         **kwargs: Any,
     ) -> Self:
         """Place caller into a named call queue.
@@ -745,10 +589,9 @@ class VerbBuilder:
         Args:
             id: str
             name: str (required)
-            actionHook: dict[str, Any] | str
-            waitHook: dict[str, Any] | str
+            actionHook: Any
+            waitHook: Any
             priority: int | float
-            _: dict[str, Any]
 
         Returns:
             self for chaining.
@@ -759,7 +602,7 @@ class VerbBuilder:
         self,
         id: str = ...,
         name: str = ...,
-        actionHook: dict[str, Any] | str = ...,
+        actionHook: Any = ...,
         timeout: int | float = ...,
         beep: bool = ...,
         callSid: str = ...,
@@ -772,7 +615,7 @@ class VerbBuilder:
         Args:
             id: str
             name: str (required)
-            actionHook: dict[str, Any] | str
+            actionHook: Any
             timeout: int | float
             beep: bool
             callSid: str
@@ -802,8 +645,8 @@ class VerbBuilder:
     def redirect(
         self,
         id: str = ...,
-        actionHook: dict[str, Any] | str = ...,
-        statusHook: dict[str, Any] | str = ...,
+        actionHook: Any = ...,
+        statusHook: Any = ...,
         **kwargs: Any,
     ) -> Self:
         """Transfer control to a different webhook URL.
@@ -812,8 +655,8 @@ class VerbBuilder:
 
         Args:
             id: str
-            actionHook: dict[str, Any] | str (required)
-            statusHook: dict[str, Any] | str
+            actionHook: Any (required)
+            statusHook: Any
 
         Returns:
             self for chaining.
@@ -868,7 +711,7 @@ class VerbBuilder:
         method: str = ...,
         body: str = ...,
         headers: dict[str, Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
+        actionHook: Any = ...,
         **kwargs: Any,
     ) -> Self:
         """Send a SIP request within the current dialog.
@@ -880,7 +723,7 @@ class VerbBuilder:
             method: str (required)
             body: str
             headers: dict[str, Any]
-            actionHook: dict[str, Any] | str
+            actionHook: Any
 
         Returns:
             self for chaining.
@@ -894,8 +737,8 @@ class VerbBuilder:
         referredBy: str = ...,
         referredByDisplayName: str = ...,
         headers: dict[str, Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
-        eventHook: dict[str, Any] | str = ...,
+        actionHook: Any = ...,
+        eventHook: Any = ...,
         **kwargs: Any,
     ) -> Self:
         """Send a SIP REFER for call transfer.
@@ -908,8 +751,8 @@ class VerbBuilder:
             referredBy: str
             referredByDisplayName: str
             headers: dict[str, Any]
-            actionHook: dict[str, Any] | str
-            eventHook: dict[str, Any] | str
+            actionHook: Any
+            eventHook: Any
 
         Returns:
             self for chaining.
@@ -919,25 +762,25 @@ class VerbBuilder:
     def config(
         self,
         id: str = ...,
-        synthesizer: dict[str, Any] = ...,
-        recognizer: dict[str, Any] = ...,
+        synthesizer: Any = ...,
+        recognizer: Any = ...,
         bargeIn: dict[str, Any] = ...,
         ttsStream: dict[str, Any] = ...,
         record: dict[str, Any] = ...,
         listen: dict[str, Any] = ...,
         stream: dict[str, Any] = ...,
         transcribe: dict[str, Any] = ...,
-        amd: dict[str, Any] = ...,
-        fillerNoise: dict[str, Any] = ...,
+        amd: Any = ...,
+        fillerNoise: Any = ...,
+        vad: Any = ...,
         notifyEvents: bool = ...,
         notifySttLatency: bool = ...,
-        reset: str | list[Any] = ...,
+        reset: Any = ...,
         onHoldMusic: str = ...,
-        actionHookDelayAction: dict[str, Any] = ...,
-        sipRequestWithinDialogHook: dict[str, Any] | str = ...,
-        boostAudioSignal: int | float | str = ...,
-        vad: dict[str, Any] = ...,
-        referHook: dict[str, Any] | str = ...,
+        actionHookDelayAction: Any = ...,
+        sipRequestWithinDialogHook: Any = ...,
+        boostAudioSignal: Any = ...,
+        referHook: Any = ...,
         earlyMedia: bool = ...,
         autoStreamTts: bool = ...,
         disableTtsCache: bool = ...,
@@ -950,25 +793,25 @@ class VerbBuilder:
 
         Args:
             id: str
-            synthesizer: dict[str, Any]
-            recognizer: dict[str, Any]
+            synthesizer: Any
+            recognizer: Any
             bargeIn: dict[str, Any]
             ttsStream: dict[str, Any]
             record: dict[str, Any]
             listen: dict[str, Any]
             stream: dict[str, Any]
             transcribe: dict[str, Any]
-            amd: dict[str, Any]
-            fillerNoise: dict[str, Any]
+            amd: Any
+            fillerNoise: Any
+            vad: Any
             notifyEvents: bool
             notifySttLatency: bool
-            reset: str | list[Any]
+            reset: Any
             onHoldMusic: str
-            actionHookDelayAction: dict[str, Any]
-            sipRequestWithinDialogHook: dict[str, Any] | str
-            boostAudioSignal: int | float | str
-            vad: dict[str, Any]
-            referHook: dict[str, Any] | str
+            actionHookDelayAction: Any
+            sipRequestWithinDialogHook: Any
+            boostAudioSignal: Any
+            referHook: Any
             earlyMedia: bool
             autoStreamTts: bool
             disableTtsCache: bool
@@ -1027,9 +870,9 @@ class VerbBuilder:
         action: str = ...,
         track: str = ...,
         play: str = ...,
-        say: str | dict[str, Any] = ...,
+        say: Any = ...,
         loop: bool = ...,
-        gain: int | float | str = ...,
+        gain: Any = ...,
         **kwargs: Any,
     ) -> Self:
         """Manage audio dubbing tracks.
@@ -1041,9 +884,9 @@ class VerbBuilder:
             action: str (required)
             track: str (required)
             play: str
-            say: str | dict[str, Any]
+            say: Any
             loop: bool
-            gain: int | float | str
+            gain: Any
 
         Returns:
             self for chaining.
@@ -1053,14 +896,14 @@ class VerbBuilder:
     def message(
         self,
         id: str = ...,
-        carrier: str = ...,
-        account_sid: str = ...,
-        message_sid: str = ...,
         to: str = ...,
         from_: str = ...,
         text: str = ...,
-        media: str | list[Any] = ...,
-        actionHook: dict[str, Any] | str = ...,
+        media: Any = ...,
+        carrier: str = ...,
+        account_sid: str = ...,
+        message_sid: str = ...,
+        actionHook: Any = ...,
         **kwargs: Any,
     ) -> Self:
         """Send SMS/MMS message.
@@ -1069,14 +912,14 @@ class VerbBuilder:
 
         Args:
             id: str
-            carrier: str
-            account_sid: str
-            message_sid: str
             to: str (required)
             from_: str (required)
             text: str
-            media: str | list[Any]
-            actionHook: dict[str, Any] | str
+            media: Any
+            carrier: str
+            account_sid: str
+            message_sid: str
+            actionHook: Any
 
         Returns:
             self for chaining.
