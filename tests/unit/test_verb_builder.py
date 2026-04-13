@@ -275,9 +275,9 @@ class TestRealisticFlows:
         assert verbs[0]["target"][0]["type"] == "phone"
         assert verbs[0]["answerOnBridge"] is True
 
-    def test_voice_agent_pipeline(self):
+    def test_voice_agent(self):
         builder = VerbBuilder()
-        builder.pipeline(
+        builder.agent(
             stt={"vendor": "deepgram", "language": "en-US"},
             tts={"vendor": "cartesia", "voice": "sonic"},
             llm={"vendor": "openai", "model": "gpt-4o", "llmOptions": {
@@ -290,7 +290,7 @@ class TestRealisticFlows:
             toolHook="/tools",
         )
         v = builder.to_list()[0]
-        assert v["verb"] == "pipeline"
+        assert v["verb"] == "agent"
         assert v["stt"]["vendor"] == "deepgram"
         assert v["llm"]["vendor"] == "openai"
         assert v["turnDetection"] == "krisp"

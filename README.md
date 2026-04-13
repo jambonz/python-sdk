@@ -72,7 +72,7 @@ async with JambonzClient(
 
 ### Spec-driven verb generation
 
-The SDK does **not** hardcode verb method signatures. Instead, verb methods (`.say()`, `.gather()`, `.dial()`, `.pipeline()`, etc.) are **auto-generated at import time** from [JSON Schema](https://github.com/jambonz/schema) files — the same schemas used by the Node.js SDK and the jambonz server.
+The SDK does **not** hardcode verb method signatures. Instead, verb methods (`.say()`, `.gather()`, `.dial()`, `.agent()`, etc.) are **auto-generated at import time** from [JSON Schema](https://github.com/jambonz/schema) files — the same schemas used by the Node.js SDK and the jambonz server.
 
 **What this means:**
 
@@ -98,7 +98,7 @@ VerbDef("new_verb", "new_verb", doc="Description.")
 
 ## Features
 
-- **All 31 jambonz verbs**: say, play, gather, dial, conference, enqueue/dequeue, hangup, pause, redirect, config, tag, dtmf, dub, message, alert, answer, leave, listen/stream, transcribe, openai_s2s, google_s2s, deepgram_s2s, elevenlabs_s2s, ultravox_s2s, s2s, llm, dialogflow, pipeline, sip_decline, sip_request, sip_refer
+- **All 31 jambonz verbs**: say, play, gather, dial, conference, enqueue/dequeue, hangup, pause, redirect, config, tag, dtmf, dub, message, alert, answer, leave, listen/stream, transcribe, openai_s2s, google_s2s, deepgram_s2s, elevenlabs_s2s, ultravox_s2s, s2s, llm, dialogflow, agent, sip_decline, sip_request, sip_refer
 - **Fluent chainable API**: `.say(...).gather(...).hangup()`
 - **Webhook transport**: `WebhookResponse` for HTTP apps (works with aiohttp, FastAPI, Flask, etc.)
 - **WebSocket transport**: `create_endpoint` with `Session`, event handling, `send()`/`reply()`
@@ -106,7 +106,7 @@ VerbDef("new_verb", "new_verb", doc="Description.")
 - **Audio streaming**: Bidirectional audio via `AudioStream`
 - **Mid-call control**: inject commands (mute, whisper, record, DTMF, tag)
 - **TTS token streaming**: `send_tts_tokens()` / `flush_tts_tokens()`
-- **Pipeline updates**: `update_pipeline()` for mid-conversation LLM changes
+- **Agent updates**: `update_agent()` for mid-conversation LLM changes
 - **Signature verification**: HMAC-SHA256 webhook signature validation
 - **Env vars**: Portal discovery via OPTIONS + runtime reading
 
@@ -119,7 +119,7 @@ See the [`examples/`](examples/) directory:
 | hello-world | [webhook](examples/hello-world/webhook_app.py) | [websocket](examples/hello-world/websocket_app.py) | Minimal greeting |
 | echo | [webhook](examples/echo/webhook_app.py) | [websocket](examples/echo/websocket_app.py) | Speech echo with gather |
 | ivr-menu | [webhook](examples/ivr-menu/webhook_app.py) | — | IVR menu with speech + DTMF |
-| voice-agent | [webhook](examples/voice-agent/webhook_app.py) | [websocket](examples/voice-agent/websocket_app.py) | LLM pipeline with tool calls |
+| voice-agent | [webhook](examples/voice-agent/webhook_app.py) | [websocket](examples/voice-agent/websocket_app.py) | LLM agent with tool calls |
 | dial | [webhook](examples/dial/webhook_app.py) | — | Outbound dial with fallback |
 | listen-record | [webhook](examples/listen-record/webhook_app.py) | [websocket](examples/listen-record/websocket_app.py) | Audio recording |
 

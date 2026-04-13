@@ -68,7 +68,7 @@ VERB_DEFS: list[VerbDef] = [
             doc="Generic S2S verb (use when vendor is determined at runtime)."),
     VerbDef("llm", "llm", doc="Legacy LLM verb (prefer s2s or vendor-specific shortcuts)."),
     VerbDef("dialogflow", "dialogflow", doc="Connect caller to Google Dialogflow agent."),
-    VerbDef("pipeline", "pipeline", doc="Integrated STT → LLM → TTS voice AI pipeline."),
+    VerbDef("agent", "agent", doc="Integrated STT → LLM → TTS voice AI agent."),
 
     # Audio Streaming
     VerbDef("listen", "listen", doc="Stream real-time audio to a websocket endpoint."),

@@ -286,7 +286,7 @@ class VerbBuilder:
         """
         ...
 
-    def pipeline(
+    def agent(
         self,
         id: str = ...,
         stt: Any = ...,
@@ -304,7 +304,7 @@ class VerbBuilder:
         mcpServers: list[Any] = ...,
         **kwargs: Any,
     ) -> Self:
-        """Integrated STT → LLM → TTS voice AI pipeline.
+        """Integrated STT → LLM → TTS voice AI agent.
 
         Required: llm
 
