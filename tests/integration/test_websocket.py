@@ -10,7 +10,7 @@ with real WebSocket clients, simulating the jambonz ↔ application protocol:
 5. App responds with ack containing next verbs
 6. App can inject commands (mute, whisper, record) at any time
 7. App can stream TTS tokens
-8. App can send pipeline updates
+8. App can send agent updates
 9. jambonz sends OPTIONS for env vars discovery (HTTP, not WS)
 """
 
@@ -313,9 +313,9 @@ class TestTtsStreamingProtocol:
             await runner.cleanup()
 
 
-# ── Pipeline updates ────────────────────────────────────────────────
+# ── Agent updates ────────────────────────────────────────────────
 
-class TestPipelineUpdateProtocol:
+class TestAgentUpdateProtocol:
     @pytest.mark.asyncio
     async def test_update_instructions(self):
         port = 19109
@@ -323,14 +323,14 @@ class TestPipelineUpdateProtocol:
         svc = make_service(path="/")
 
         async def handler(session):
-            session.pipeline(
+            session.agent(
                 stt={"vendor": "deepgram"},
                 tts={"vendor": "cartesia", "voice": "sonic"},
                 llm={"vendor": "openai", "model": "gpt-4o", "llmOptions": {}},
                 actionHook="/done",
             )
             await session.send()
-            await session.update_pipeline({
+            await session.update_agent({
                 "type": "update_instructions",
                 "instructions": "Now help with billing.",
             })
@@ -340,9 +340,9 @@ class TestPipelineUpdateProtocol:
             http, ws = await _ws_connect(port)
             await ws.send_str(_session_new())
             ack = await _recv(ws)
-            assert ack["data"][0]["verb"] == "pipeline"
+            assert ack["data"][0]["verb"] == "agent"
             update = await _recv(ws)
-            assert update["type"] == "pipeline:update"
+            assert update["type"] == "agent:update"
             assert update["data"]["instructions"] == "Now help with billing."
             await ws.close()
             await http.close()

@@ -514,10 +514,10 @@ class DialogflowVerb(TypedDict, total=False):
     tts: Synthesizer
 
 
-class PipelineVerb(TypedDict, total=False):
-    """Integrated STT -> LLM -> TTS voice AI pipeline."""
+class AgentVerb(TypedDict, total=False):
+    """Integrated STT -> LLM -> TTS voice AI agent."""
 
-    verb: str  # "pipeline"
+    verb: str  # "agent"
     id: str
     stt: Recognizer
     tts: Synthesizer
@@ -568,5 +568,5 @@ AnyVerb = Union[
     ElevenlabsS2sVerb,
     UltravoxS2sVerb,
     DialogflowVerb,
-    PipelineVerb,
+    AgentVerb,
 ]

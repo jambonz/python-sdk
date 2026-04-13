@@ -1,7 +1,7 @@
 """Voice Agent - WebSocket example.
 
-LLM-powered voice agent using the pipeline verb with tool calling.
-Demonstrates pipeline configuration, eventHook handling, and toolHook handling.
+LLM-powered voice agent using the agent verb with tool calling.
+Demonstrates agent configuration, eventHook handling, and toolHook handling.
 
 Usage:
     python websocket_app.py
@@ -40,7 +40,7 @@ async def main():
 
         print(f"New call: {session.call_sid} from {session.from_}")
 
-        # Handle pipeline events
+        # Handle agent events
         async def on_event(evt):
             event_type = evt.get("type", "")
             if event_type == "turn_end":
@@ -51,7 +51,7 @@ async def main():
                 )
             await session.reply()
 
-        session.on("/pipeline-event", on_event)
+        session.on("/agent-event", on_event)
 
         # Handle tool calls
         async def on_tool(evt):
@@ -71,16 +71,16 @@ async def main():
 
         session.on("/tool-call", on_tool)
 
-        # Handle pipeline completion
+        # Handle agent completion
         async def on_complete(evt):
-            print(f"Pipeline complete: {evt.get('completion_reason', 'unknown')}")
+            print(f"Agent complete: {evt.get('completion_reason', 'unknown')}")
             session.hangup()
             await session.reply()
 
-        session.on("/pipeline-complete", on_complete)
+        session.on("/agent-complete", on_complete)
 
-        # Start the pipeline
-        session.pipeline(
+        # Start the agent
+        session.agent(
             stt={
                 "vendor": "deepgram",
                 "language": "en-US",
@@ -133,9 +133,9 @@ async def main():
             turnDetection="krisp",
             earlyGeneration=True,
             bargeIn={"enable": True, "minSpeechDuration": 0.3},
-            eventHook="/pipeline-event",
+            eventHook="/agent-event",
             toolHook="/tool-call",
-            actionHook="/pipeline-complete",
+            actionHook="/agent-complete",
         )
         await session.send()
 

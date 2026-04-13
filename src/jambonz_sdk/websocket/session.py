@@ -227,7 +227,7 @@ class Session(VerbBuilder):
     # ── LLM Tool Output ────────────────────────────────────────────
 
     async def tool_output(self, tool_call_id: str, result: Any) -> Session:
-        """Return a tool call result to the pipeline LLM.
+        """Return a tool call result to the agent LLM.
 
         Args:
             tool_call_id: The tool_call_id from the llm:tool-call event.
@@ -246,14 +246,14 @@ class Session(VerbBuilder):
         await self._ws.send(json.dumps(msg))
         return self
 
-    # ── Pipeline Updates ────────────────────────────────────────────
+    # ── Agent Updates ────────────────────────────────────────────
 
-    async def update_pipeline(self, data: dict[str, Any]) -> None:
-        """Send a mid-conversation pipeline update.
+    async def update_agent(self, data: dict[str, Any]) -> None:
+        """Send a mid-conversation agent update.
 
         Args:
             data: Update payload with ``type`` key (e.g., 'update_instructions',
                 'inject_context', 'update_tools', 'generate_reply').
         """
-        msg = {"type": "pipeline:update", "data": data}
+        msg = {"type": "agent:update", "data": data}
         await self._ws.send(json.dumps(msg))

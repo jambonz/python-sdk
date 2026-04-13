@@ -34,6 +34,7 @@ from jambonz_sdk.types.session import (
     WsMessageType,
 )
 from jambonz_sdk.types.verbs import (
+    AgentVerb,
     AlertVerb,
     AnswerVerb,
     AnyVerb,
@@ -56,7 +57,6 @@ from jambonz_sdk.types.verbs import (
     MessageVerb,
     OpenaiS2sVerb,
     PauseVerb,
-    PipelineVerb,
     PlayVerb,
     RedirectVerb,
     S2sVerb,
@@ -92,6 +92,7 @@ __all__ = [
     "TurnTaking",
     "Vad",
     # Verbs
+    "AgentVerb",
     "AlertVerb",
     "AnswerVerb",
     "AnyVerb",
@@ -114,7 +115,6 @@ __all__ = [
     "MessageVerb",
     "OpenaiS2sVerb",
     "PauseVerb",
-    "PipelineVerb",
     "PlayVerb",
     "RedirectVerb",
     "S2sVerb",

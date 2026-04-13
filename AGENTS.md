@@ -22,7 +22,7 @@ A jambonz application controls phone calls by returning **arrays of verbs** — 
 - **Webhook (HTTP)**: Your server receives POST requests and returns JSON verb arrays. Stateless and simple.
 - **WebSocket**: Persistent bidirectional connection. Required for real-time LLM agents, audio streaming, and TTS token streaming.
 
-**IMPORTANT**: Any application that uses a speech-to-speech verb (`openai_s2s`, `google_s2s`, `deepgram_s2s`, `ultravox_s2s`, `elevenlabs_s2s`, `s2s`, or `pipeline`) MUST use WebSocket transport.
+**IMPORTANT**: Any application that uses a speech-to-speech verb (`openai_s2s`, `google_s2s`, `deepgram_s2s`, `ultravox_s2s`, `elevenlabs_s2s`, `s2s`, or `agent`) MUST use WebSocket transport.
 
 ## Core Verbs
 
@@ -34,7 +34,7 @@ A jambonz application controls phone calls by returning **arrays of verbs** — 
 ### AI & Real-time
 - **openai_s2s** / **google_s2s** / **deepgram_s2s** / **ultravox_s2s** / **elevenlabs_s2s** — Vendor-specific LLM voice conversation.
 - **s2s** — Generic LLM voice conversation (use when vendor is determined at runtime).
-- **pipeline** — Higher-level voice AI pipeline with integrated turn detection.
+- **agent** — Higher-level voice AI agent with integrated turn detection.
 - **dialogflow** — Google Dialogflow agent.
 - **stream** — Stream raw audio to a websocket endpoint.
 - **transcribe** — Real-time call transcription.
@@ -258,7 +258,7 @@ await client.calls.whisper(call_sid, {"verb": "say", "text": "Hello"})
 await client.calls.mute(call_sid, "mute")
 await client.calls.redirect(call_sid, "https://example.com/new")
 await client.calls.update(call_sid, {"call_status": "completed"})
-await client.calls.update_pipeline(call_sid, {"type": "update_instructions", "instructions": "New prompt"})
+await client.calls.update_agent(call_sid, {"type": "update_instructions", "instructions": "New prompt"})
 ```
 
 ## TTS Token Streaming
@@ -273,18 +273,18 @@ await session.flush_tts_tokens()
 await session.clear_tts_tokens()
 ```
 
-## Pipeline Updates
+## Agent Updates
 
-Update a running pipeline mid-conversation:
+Update a running agent mid-conversation:
 
 ```python
-await session.update_pipeline({"type": "update_instructions", "instructions": "Now help with billing."})
-await session.update_pipeline({"type": "inject_context", "messages": [{"role": "system", "content": "Customer is Gold tier."}]})
-await session.update_pipeline({"type": "update_tools", "tools": [...]})
-await session.update_pipeline({"type": "generate_reply", "user_input": "Override", "interrupt": True})
+await session.update_agent({"type": "update_instructions", "instructions": "Now help with billing."})
+await session.update_agent({"type": "inject_context", "messages": [{"role": "system", "content": "Customer is Gold tier."}]})
+await session.update_agent({"type": "update_tools", "tools": [...]})
+await session.update_agent({"type": "generate_reply", "user_input": "Override", "interrupt": True})
 ```
 
-## Tool Output (Pipeline)
+## Tool Output (Agent)
 
 When the LLM requests a tool call, return the result:
 
@@ -348,7 +348,7 @@ audio_svc.on("connection", on_audio_connection)
 | `llm:tool-output` | Tool call result (`tool_output()`) |
 | `tts:tokens` | Stream TTS text (`send_tts_tokens()`) |
 | `tts:flush` | End TTS stream (`flush_tts_tokens()`) |
-| `pipeline:update` | Pipeline update (`update_pipeline()`) |
+| `agent:update` | Agent update (`update_agent()`) |
 
 ## Common Patterns
 
@@ -361,9 +361,9 @@ jambonz.say(text="Welcome.").gather(
 ).say(text="No input. Goodbye.").hangup()
 ```
 
-### Voice Agent (Pipeline)
+### Voice Agent
 ```python
-session.pipeline(
+session.agent(
     stt={"vendor": "deepgram", "language": "en-US"},
     tts={"vendor": "cartesia", "voice": "sonic-english"},
     llm={"vendor": "openai", "model": "gpt-4o", "llmOptions": {
@@ -371,7 +371,7 @@ session.pipeline(
     }},
     turnDetection="krisp",
     bargeIn={"enable": True},
-    actionHook="/pipeline-done",
+    actionHook="/agent-done",
     eventHook="/events",
     toolHook="/tools",
 )

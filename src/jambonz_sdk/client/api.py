@@ -100,16 +100,16 @@ class CallsResource(_Resource):
         """
         return await self.update(call_sid, {"mute_status": status})
 
-    async def update_pipeline(
+    async def update_agent(
         self, call_sid: str, data: dict[str, Any]
     ) -> dict[str, Any]:
-        """Send a mid-conversation pipeline update.
+        """Send a mid-conversation agent update.
 
         Args:
             call_sid: The call to update.
-            data: Pipeline update payload.
+            data: Agent update payload.
         """
-        return await self.update(call_sid, {"pipeline_update": data})
+        return await self.update(call_sid, {"agent_update": data})
 
     async def noise_isolation(
         self, call_sid: str, status: str, opts: dict[str, Any] | None = None

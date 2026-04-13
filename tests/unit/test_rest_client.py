@@ -161,15 +161,15 @@ class TestCallsMute:
         assert mock.request.call_args[1]["json"]["mute_status"] == "unmute"
 
 
-class TestCallsPipelineUpdate:
-    """PUT /Calls/{callSid} with pipeline_update."""
+class TestCallsAgentUpdate:
+    """PUT /Calls/{callSid} with agent_update."""
 
     @pytest.mark.asyncio
-    async def test_sends_pipeline_update(self):
+    async def test_sends_agent_update(self):
         client, mock = _client_with_mock(_MockResponse(200, {}))
-        await client.calls.update_pipeline("c1", {"type": "update_instructions", "instructions": "New prompt"})
+        await client.calls.update_agent("c1", {"type": "update_instructions", "instructions": "New prompt"})
         body = mock.request.call_args[1]["json"]
-        assert body["pipeline_update"]["type"] == "update_instructions"
+        assert body["agent_update"]["type"] == "update_instructions"
 
 
 # ── Conferences resource ────────────────────────────────────────────

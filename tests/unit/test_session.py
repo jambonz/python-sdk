@@ -6,7 +6,7 @@ Tests validate the jambonz WebSocket protocol contract:
 - Inject commands produce "command" messages per the jambonz WS spec
 - TTS streaming produces tts:tokens/tts:flush/tts:clear messages
 - Tool output produces llm:tool-output messages
-- Pipeline updates produce pipeline:update messages
+- Agent updates produce agent:update messages
 - Session properties are correctly extracted from session:new data
 """
 
@@ -306,25 +306,25 @@ class TestToolOutput:
         assert msg["data"]["output"]["temperature"] == 72
 
 
-# ── Pipeline updates ────────────────────────────────────────────────
+# ── Agent updates ────────────────────────────────────────────────
 
-class TestPipelineUpdate:
-    """Pipeline updates per jambonz protocol:
-    {"type": "pipeline:update", "data": {"type": ..., ...}}"""
+class TestAgentUpdate:
+    """Agent updates per jambonz protocol:
+    {"type": "agent:update", "data": {"type": ..., ...}}"""
 
     @pytest.mark.asyncio
     async def test_update_instructions(self):
         s, ws = _make_session()
-        await s.update_pipeline({"type": "update_instructions", "instructions": "Be a billing agent."})
+        await s.update_agent({"type": "update_instructions", "instructions": "Be a billing agent."})
         msg = json.loads(ws.send.call_args[0][0])
-        assert msg["type"] == "pipeline:update"
+        assert msg["type"] == "agent:update"
         assert msg["data"]["type"] == "update_instructions"
         assert msg["data"]["instructions"] == "Be a billing agent."
 
     @pytest.mark.asyncio
     async def test_inject_context(self):
         s, ws = _make_session()
-        await s.update_pipeline({
+        await s.update_agent({
             "type": "inject_context",
             "messages": [{"role": "system", "content": "Customer is Gold tier."}],
         })
@@ -334,7 +334,7 @@ class TestPipelineUpdate:
     @pytest.mark.asyncio
     async def test_generate_reply_with_interrupt(self):
         s, ws = _make_session()
-        await s.update_pipeline({
+        await s.update_agent({
             "type": "generate_reply",
             "user_input": "Urgent override",
             "interrupt": True,

@@ -65,7 +65,7 @@ The SDK supports all 26+ jambonz verbs. Verb methods on VerbBuilder are **auto-g
 ### Verb List
 
 Audio/Speech: `say`, `play`, `gather`
-AI/S2S: `openai_s2s`, `google_s2s`, `deepgram_s2s`, `elevenlabs_s2s`, `ultravox_s2s`, `s2s`, `llm`, `dialogflow`, `pipeline`
+AI/S2S: `openai_s2s`, `google_s2s`, `deepgram_s2s`, `elevenlabs_s2s`, `ultravox_s2s`, `s2s`, `llm`, `dialogflow`, `agent`
 Call Control: `dial`, `conference`, `enqueue`, `dequeue`, `hangup`, `redirect`, `pause`
 Audio Streaming: `listen`, `stream`, `transcribe`
 SIP: `sip_decline`, `sip_request`, `sip_refer`
@@ -105,7 +105,7 @@ Source: https://github.com/jambonz/schema
 
 `AGENTS.md` is the comprehensive developer guide for AI agents working with this SDK.
 It covers: verb system, webhook/WebSocket patterns, REST API, env vars, mid-call control,
-TTS streaming, pipeline updates, audio streaming, and common application patterns.
+TTS streaming, agent updates, audio streaming, and common application patterns.
 AI coding agents should read AGENTS.md before generating jambonz Python application code.
 
 ### MCP Server
@@ -171,11 +171,11 @@ pytest                      # All 279 tests
 ### Unit tests (`tests/unit/`)
 - `test_verb_builder.py` — Parametrized across all 31 verb defs: method existence, correct verb name, all spec properties pass through
 - `test_webhook.py` — Webhook contract, HMAC-SHA256 signature protocol, env vars OPTIONS format
-- `test_session.py` — WebSocket protocol messages: ack, command, tts:tokens, llm:tool-output, pipeline:update
+- `test_session.py` — WebSocket protocol messages: ack, command, tts:tokens, llm:tool-output, agent:update
 - `test_ws_client.py` — Message routing: session:new, verb:hook dispatch, auto-reply, binary/JSON robustness
 - `test_rest_client.py` — REST API contract: URL construction, HTTP methods, request bodies
 - `test_audio_stream.py` — Audio protocol: raw PCM, playAudio JSON, marks, control commands
 
 ### Integration tests (`tests/integration/`)
 - `test_webhook.py` — Real aiohttp server with IVR menu, actionHook routing, env vars discovery
-- `test_websocket.py` — Real WebSocket connections: full protocol compliance, multi-step conversations, inject commands, TTS streaming, pipeline updates
+- `test_websocket.py` — Real WebSocket connections: full protocol compliance, multi-step conversations, inject commands, TTS streaming, agent updates
