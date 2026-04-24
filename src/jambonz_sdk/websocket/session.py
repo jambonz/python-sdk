@@ -229,19 +229,30 @@ class Session(VerbBuilder):
     async def tool_output(self, tool_call_id: str, result: Any) -> Session:
         """Return a tool call result to the agent LLM.
 
+        Canonical wire shape (validated by ``@jambonz/schema``)::
+
+            {"type": "command", "command": "llm:tool-output",
+             "tool_call_id": "...", "data": {"result": ...}}
+
+        The ``result`` argument becomes ``data.result`` when it is not a dict,
+        matching the Node SDK's convenience wrapping. Passing a dict sends it
+        as-is so callers can include richer structured output (feature-server
+        JSON-stringifies the full ``data`` object on the way to the LLM).
+
         Args:
             tool_call_id: The tool_call_id from the llm:tool-call event.
-            result: The tool result (will be JSON-serialized).
+            result: The tool result. A non-dict value is wrapped as
+                ``{"result": result}``; a dict is sent as-is.
 
         Returns:
             self for chaining with .reply().
         """
+        payload = result if isinstance(result, dict) else {"result": result}
         msg = {
-            "type": "llm:tool-output",
-            "data": {
-                "tool_call_id": tool_call_id,
-                "output": result,
-            },
+            "type": "command",
+            "command": "llm:tool-output",
+            "tool_call_id": tool_call_id,
+            "data": payload,
         }
         await self._ws.send(json.dumps(msg))
         return self
