@@ -22,7 +22,7 @@ import urllib.request
 from pathlib import Path
 
 # ── Pin the schema version here ──────────────────────────────────────
-SCHEMA_VERSION = "v0.2.1"
+SCHEMA_VERSION = "v0.3.5"
 # ────────────────────────────────────────────────────────────────────
 
 DEST = Path(__file__).resolve().parent.parent / "src" / "jambonz_sdk" / "schema"
