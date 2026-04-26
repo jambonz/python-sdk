@@ -268,3 +268,24 @@ class Session(VerbBuilder):
         """
         msg = {"type": "agent:update", "data": data}
         await self._ws.send(json.dumps(msg))
+
+    async def inject_stt_reconfigure(
+        self,
+        language_hints: list[str] | None = None,
+        opts: dict[str, Any] | None = None
+    ) -> None:
+        """Reconfigure STT (speech-to-text) settings mid-call.
+
+        Currently supports updating language hints for Deepgram Flux Multilingual.
+
+        Args:
+            language_hints: List of BCP-47 language codes (e.g., ['en', 'es']).
+                            Pass empty list [] to clear hints and enable auto-detection.
+            opts: Additional STT reconfiguration options.
+        """
+        data: dict[str, Any] = {}
+        if language_hints is not None:
+            data["languageHints"] = language_hints
+        if opts:
+            data.update(opts)
+        await self.inject_command("stt:reconfigure", data)
