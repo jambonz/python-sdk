@@ -1,11 +1,20 @@
-"""VerbBuilder base class with auto-generated chainable verb methods.
+"""VerbBuilder base class with chainable verb methods.
 
-Methods are generated at import time from JSON Schema files + the verb registry.
-When the schema changes, the SDK automatically picks up new parameters —
-no manual method signatures to maintain.
+Each verb method accepts three interchangeable forms:
 
-Each generated method has a real ``inspect.Signature`` with typed parameters
-so IDEs (VS Code, PyCharm) show proper autocomplete and type hints.
+1. A typed pydantic model: ``session.gather(Gather(input=["speech"], ...))``
+2. A raw dict: ``session.gather({"input": ["speech"], "actionHook": "/x"})``
+3. Keyword arguments: ``session.gather(input=["speech"], actionHook="/x")``
+
+All three are validated and normalized through the verb's generated pydantic
+model before being appended to the queue. Validation errors (unknown fields,
+wrong types, cross-field rule violations) are raised at construction time,
+not hours later on the jambonz server.
+
+Methods are built from the verb registry at import time. Each method also
+carries a real ``inspect.Signature`` + ``__annotations__`` so IDEs show
+autocomplete hints for the kwargs style. For full typed autocomplete,
+users should import and pass the model classes directly.
 """
 
 from __future__ import annotations
@@ -22,6 +31,9 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+from pydantic import ValidationError
+
+from jambonz_sdk._models._registry import verb_model
 from jambonz_sdk.types.verbs import AnyVerb
 from jambonz_sdk.verb_registry import VERB_DEFS, VerbDef
 
@@ -193,36 +205,90 @@ _SPECS: dict[str, Any] = _load_schemas()
 # ── Method factory ──────────────────────────────────────────────────
 
 def _make_verb_method(verb_def: VerbDef, spec: dict[str, Any]) -> Any:
-    """Create a verb method with a real typed signature from the spec.
+    """Create a verb method that routes through the generated pydantic model.
 
-    Each generated method has:
-    - ``inspect.Signature`` with keyword-only parameters (default ``None``)
-    - ``__annotations__`` with resolved Python types (not ``Any``)
-    - Docstring with parameter types and required markers
+    The returned method accepts either a positional ``Model`` / ``dict``
+    argument or keyword arguments matching the verb's schema. The payload
+    is validated via the model (raising ``ValidationError`` on typos,
+    wrong types, or cross-field rule violations) then dumped with
+    ``mode='json', by_alias=True, exclude_none=True`` to produce the exact
+    wire format jambonz expects.
+
+    Each method also carries a real ``inspect.Signature`` derived from the
+    verb schema, so IDEs show kwargs-style hints. For richer hints, users
+    should pass the model classes directly (``session.gather(Gather(...))``).
     """
     properties = spec.get("properties", {})
     required = set(spec.get("required", []))
     json_verb = verb_def.json_verb
-    inject = verb_def.inject
+    inject = dict(verb_def.inject)  # copy; never mutated but defensive
+    model_cls = verb_model(json_verb)
 
-    def verb_method(self: VerbBuilder, **kwargs: Any) -> Self:
-        data: dict[str, Any] = {}
-        if inject:
-            data.update(inject)
-        for key, value in kwargs.items():
-            if value is None:
-                continue
-            if key == "from_":
-                data["from"] = value
+    def verb_method(
+        self: VerbBuilder,
+        arg: Any = None,
+        /,
+        **kwargs: Any,
+    ) -> Self:
+        if arg is not None and kwargs:
+            raise TypeError(
+                f"{verb_def.method_name}() takes either a model/dict or keyword "
+                "arguments, not both"
+            )
+
+        if model_cls is not None and isinstance(arg, model_cls):
+            data = arg.model_dump(mode="json", by_alias=True, exclude_none=True)
+        else:
+            # Build a payload dict from arg (if a dict) or kwargs, then merge
+            # the registry's injected fields and coerce ``from_`` → ``from``.
+            if isinstance(arg, dict):
+                payload: dict[str, Any] = dict(arg)
+            elif arg is None:
+                payload = {}
             else:
-                data[key] = value
-        verb: dict[str, Any] = {"verb": json_verb, **data}
-        self._verbs.append(verb)  # type: ignore[arg-type]
+                raise TypeError(
+                    f"{verb_def.method_name}() expected a {model_cls.__name__ if model_cls else 'dict'} "
+                    f"or dict, got {type(arg).__name__}"
+                )
+
+            for key, value in kwargs.items():
+                if value is None:
+                    continue
+                payload["from" if key == "from_" else key] = value
+
+            # Inject verb-registry defaults (e.g. vendor for vendor-specific
+            # shortcuts) if not already set by the caller.
+            for key, value in inject.items():
+                payload.setdefault(key, value)
+
+            if model_cls is not None:
+                try:
+                    model = model_cls.model_validate(payload)
+                except ValidationError as exc:
+                    raise exc
+                data = model.model_dump(mode="json", by_alias=True, exclude_none=True)
+            else:
+                # Fallback when no generated model exists (e.g. fresh checkout
+                # before scripts/regen_models.py has run). Preserve legacy
+                # behavior: raw dict assembly with the verb tag.
+                data = {"verb": json_verb, **payload}
+
+        self._verbs.append(data)  # type: ignore[arg-type]
         return self
 
     # ── Build inspect.Signature with typed keyword-only params ──────
-    params = [inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD)]
-    annotations: dict[str, Any] = {}
+    # The first param is a positional-only model/dict. Subsequent params
+    # mirror the schema's top-level properties for kwargs-style autocomplete.
+    params = [
+        inspect.Parameter("self", inspect.Parameter.POSITIONAL_ONLY),
+        inspect.Parameter(
+            "arg",
+            inspect.Parameter.POSITIONAL_ONLY,
+            default=None,
+            annotation=Union[model_cls, dict, None] if model_cls else Union[dict, None],
+        ),
+    ]
+    annotations: dict[str, Any] = {"arg": Union[model_cls, dict, None] if model_cls else Union[dict, None]}
 
     for prop_name, prop_spec in properties.items():
         py_name = "from_" if prop_name == "from" else prop_name

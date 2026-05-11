@@ -25,6 +25,7 @@ classifiers = [
 dependencies = [
     "aiohttp>=3.9",
     "jsonschema>=4.20",
+    "pydantic>=2.10",
     "referencing>=0.31",
     "typing_extensions>=4.0; python_version < '3.11'",
 ]
@@ -43,6 +44,7 @@ dev = [
     "aioresponses>=0.7",
     "ruff>=0.4",
     "mypy>=1.10",
+    "datamodel-code-generator[http]>=0.25",
 ]
 
 [tool.hatch.build.targets.wheel]
