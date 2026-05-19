@@ -507,6 +507,16 @@ def write_schema_version(output_dir: Path, version: str) -> None:
 
 
 def ruff_format(output_dir: Path) -> None:
+    # ``ruff check --fix`` first to sort imports (I001), drop unused imports
+    # left over by the nested-override rewrite (F401), and rewrite quoted
+    # annotations (UP037) that the validator-injection emitted. Then
+    # ``ruff format`` for whitespace. Running ``check`` before ``format``
+    # keeps the final output stable.
+    subprocess.run(
+        ["ruff", "check", "--fix", "--quiet", str(output_dir)],
+        check=False,
+        capture_output=True,
+    )
     subprocess.run(
         ["ruff", "format", str(output_dir)],
         check=False,
