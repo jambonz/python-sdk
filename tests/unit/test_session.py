@@ -261,9 +261,9 @@ class TestInjectCommands:
 
 class TestTtsStreaming:
     """TTS token streaming messages per jambonz protocol:
-    - tts:tokens: {"type": "tts:tokens", "data": {"tokens": "<text>"}}
-    - tts:flush: {"type": "tts:flush", "data": {}}
-    - tts:clear: {"type": "tts:clear", "data": {}}
+    - tts:tokens: {"type": "command", "command": "tts:tokens", "data": {"id": N, "tokens": "<text>"}}
+    - tts:flush: {"type": "command", "command": "tts:flush", "data": {}}
+    - tts:clear: {"type": "command", "command": "tts:clear", "data": {}}
     """
 
     @pytest.mark.asyncio
@@ -271,22 +271,43 @@ class TestTtsStreaming:
         s, ws = _make_session()
         await s.send_tts_tokens("Hello, how ")
         msg = json.loads(ws.send.call_args[0][0])
-        assert msg["type"] == "tts:tokens"
+        assert msg["type"] == "command"
+        assert msg["command"] == "tts:tokens"
         assert msg["data"]["tokens"] == "Hello, how "
+        assert msg["data"]["id"] == 1
+
+    @pytest.mark.asyncio
+    async def test_send_tts_tokens_auto_increment_id(self):
+        s, ws = _make_session()
+        await s.send_tts_tokens("first")
+        msg1 = json.loads(ws.send.call_args[0][0])
+        await s.send_tts_tokens("second")
+        msg2 = json.loads(ws.send.call_args[0][0])
+        assert msg1["data"]["id"] == 1
+        assert msg2["data"]["id"] == 2
+
+    @pytest.mark.asyncio
+    async def test_send_tts_tokens_explicit_id(self):
+        s, ws = _make_session()
+        await s.send_tts_tokens("hello", id=42)
+        msg = json.loads(ws.send.call_args[0][0])
+        assert msg["data"]["id"] == 42
 
     @pytest.mark.asyncio
     async def test_flush_tts_tokens(self):
         s, ws = _make_session()
         await s.flush_tts_tokens()
         msg = json.loads(ws.send.call_args[0][0])
-        assert msg["type"] == "tts:flush"
+        assert msg["type"] == "command"
+        assert msg["command"] == "tts:flush"
 
     @pytest.mark.asyncio
     async def test_clear_tts_tokens(self):
         s, ws = _make_session()
         await s.clear_tts_tokens()
         msg = json.loads(ws.send.call_args[0][0])
-        assert msg["type"] == "tts:clear"
+        assert msg["type"] == "command"
+        assert msg["command"] == "tts:clear"
 
 
 # ── Tool output ─────────────────────────────────────────────────────
