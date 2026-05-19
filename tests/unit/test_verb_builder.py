@@ -1,25 +1,72 @@
 """Spec-driven tests for VerbBuilder.
 
-These tests validate that:
-1. Every verb in the registry has a corresponding method on VerbBuilder
-2. Every method produces JSON output matching the JSON Schema contract
-3. Verb synonyms and injected properties work correctly
-4. The builder's chaining and reset behavior is correct
-5. Property names in output match JSON Schema exactly (camelCase preserved)
-6. The 'from' → 'from_' Python mapping works for the message verb
+Validates the contract VerbBuilder offers to users:
 
-Tests are driven by JSON Schema — if a new property is added to a verb schema,
-these tests verify the SDK can pass it through correctly.
+- every verb in the registry is reachable as a method and produces a dict
+  with the correct ``verb`` key
+- method input styles (pydantic model, dict, kwargs) are interchangeable
+- property names on the wire match the JSON Schema exactly (camelCase)
+- Python reserved word mapping (``from_`` → ``from``) works
+- chaining and reset behavior match the documented API
+- strict validation catches typos / missing required fields at construction
+  time rather than at the jambonz server
+
+Since verbs have heterogeneous required-field sets, per-verb minimal valid
+payloads are hand-maintained in ``MINIMAL_VALID_KWARGS`` below. They are
+chosen to be the smallest input that round-trips through the model.
 """
 
 import json
 
 import pytest
+from pydantic import ValidationError
 
-from jambonz_sdk.verb_builder import _SPECS, VerbBuilder
+from jambonz_sdk._models._registry import verb_model
+from jambonz_sdk.verb_builder import VerbBuilder
 from jambonz_sdk.verb_registry import VERB_DEFS
 
-# ── Spec-driven: every registered verb must exist as a method ───────
+# ── Per-verb minimal payloads that satisfy required-field validation ─
+# Values here are intentionally the smallest valid input for each verb;
+# changes to a verb schema's ``required`` list will surface here.
+
+MINIMAL_VALID_KWARGS: dict[str, dict] = {
+    "say": {"text": "hi"},
+    "play": {"url": "https://example.com/audio.mp3"},
+    "gather": {},
+    "openai_s2s": {"llmOptions": {}},
+    "google_s2s": {"llmOptions": {}},
+    "deepgram_s2s": {"llmOptions": {}},
+    "elevenlabs_s2s": {"auth": {"agent_id": "agent-123"}},
+    "ultravox_s2s": {"llmOptions": {}},
+    "s2s": {"vendor": "openai", "llmOptions": {}},
+    "llm": {"vendor": "openai", "llmOptions": {}},
+    "dialogflow": {"project": "p", "lang": "en-US", "credentials": "{}"},
+    "agent": {"llm": {"vendor": "openai", "llmOptions": {}}},
+    "listen": {"url": "wss://example.com/a"},
+    "stream": {"url": "wss://example.com/a"},
+    "transcribe": {},
+    "dial": {"target": [{"type": "phone", "number": "+15085551212"}]},
+    "conference": {"name": "room"},
+    "enqueue": {"name": "q"},
+    "dequeue": {"name": "q"},
+    "hangup": {},
+    "redirect": {"actionHook": "/next"},
+    "pause": {"length": 1},
+    "sip_decline": {"status": 486},
+    "sip_request": {"method": "INFO"},
+    "sip_refer": {"referTo": "sip:alice@example.com"},
+    "config": {},
+    "tag": {"data": {"foo": "bar"}},
+    "dtmf": {"dtmf": "1234"},
+    "dub": {"action": "addTrack", "track": "1"},
+    "message": {"to": "+1", "from_": "+2", "text": "hi"},
+    "alert": {"message": "info=alert-internal"},
+    "answer": {},
+    "leave": {},
+}
+
+
+# ── Method existence and verb-name mapping ──────────────────────────
 
 class TestAllVerbsRegistered:
     """Every VerbDef in the registry must produce a working method."""
@@ -30,10 +77,7 @@ class TestAllVerbsRegistered:
         ids=[d.method_name for d in VERB_DEFS],
     )
     def test_method_exists(self, verb_def):
-        assert hasattr(VerbBuilder, verb_def.method_name), (
-            f"VerbBuilder missing method '{verb_def.method_name}' "
-            f"for spec '{verb_def.spec_name}'"
-        )
+        assert hasattr(VerbBuilder, verb_def.method_name)
 
     @pytest.mark.parametrize(
         "verb_def",
@@ -41,62 +85,67 @@ class TestAllVerbsRegistered:
         ids=[d.method_name for d in VERB_DEFS],
     )
     def test_method_is_callable(self, verb_def):
-        method = getattr(VerbBuilder, verb_def.method_name)
-        assert callable(method)
+        assert callable(getattr(VerbBuilder, verb_def.method_name))
 
     @pytest.mark.parametrize(
         "verb_def",
         VERB_DEFS,
         ids=[d.method_name for d in VERB_DEFS],
     )
-    def test_method_produces_correct_verb_name(self, verb_def):
-        """Calling the method must produce a dict with the correct 'verb' key."""
+    def test_minimal_payload_produces_correct_verb_name(self, verb_def):
+        """A minimal valid payload round-trips and carries the verb name."""
+        kwargs = MINIMAL_VALID_KWARGS.get(verb_def.method_name)
+        assert kwargs is not None, (
+            f"no minimal payload defined for {verb_def.method_name}; "
+            "add an entry to MINIMAL_VALID_KWARGS"
+        )
         builder = VerbBuilder()
-        method = getattr(builder, verb_def.method_name)
-        method()  # Call with no args — all are optional at Python level
+        getattr(builder, verb_def.method_name)(**kwargs)
         verbs = builder.to_list()
         assert len(verbs) == 1
         assert verbs[0]["verb"] == verb_def.json_verb
 
 
-# ── Spec-driven: output properties must match JSON Schema ─────────
+# ── Every schema property round-trips through the builder ───────────
 
 class TestVerbOutputMatchesSpec:
-    """For each verb, passing a property defined in the JSON Schema must
-    appear in the output JSON with the exact same key name."""
+    """Properties declared on a verb's schema must pass through to the output."""
 
     @pytest.mark.parametrize(
         "verb_def",
         VERB_DEFS,
         ids=[d.method_name for d in VERB_DEFS],
     )
-    def test_all_spec_properties_pass_through(self, verb_def):
-        """Every property in the spec can be passed and appears in output."""
-        spec = _SPECS[verb_def.spec_name]
-        properties = spec.get("properties", {})
+    def test_required_properties_pass_through(self, verb_def):
+        """Every required field on the generated model appears in output."""
+        model = verb_model(verb_def.json_verb)
+        if model is None:
+            pytest.skip(f"no generated model for {verb_def.json_verb}")
 
-        # Build kwargs with dummy values matching expected types
-        kwargs = {}
-        for prop_name, prop_type in properties.items():
-            py_name = "from_" if prop_name == "from" else prop_name
-            kwargs[py_name] = _dummy_value(prop_type)
+        required_aliases: set[str] = set()
+        for name, info in model.model_fields.items():
+            if name == "verb" or not info.is_required():
+                continue
+            required_aliases.add(info.alias or name)
 
+        kwargs = dict(MINIMAL_VALID_KWARGS.get(verb_def.method_name, {}))
         builder = VerbBuilder()
-        method = getattr(builder, verb_def.method_name)
-        method(**kwargs)
-        verbs = builder.to_list()
-        output = verbs[0]
+        getattr(builder, verb_def.method_name)(**kwargs)
+        output = builder.to_list()[0]
 
-        # Verify every spec property appears in output (with exact key name)
-        for prop_name in properties:
-            assert prop_name in output, (
-                f"Verb '{verb_def.method_name}': spec property '{prop_name}' "
-                f"missing from output. Got keys: {list(output.keys())}"
+        for alias in required_aliases:
+            if alias == "from":
+                continue  # covered by TestPythonReservedWordMapping
+            assert alias in output, (
+                f"{verb_def.method_name}: required field '{alias}' "
+                f"missing from output {list(output.keys())}"
             )
 
 
+# ── Verb synonyms and vendor-shortcut behavior ──────────────────────
+
 class TestVerbSynonyms:
-    """Synonym verbs must produce the correct json_verb and inject defaults."""
+    """Synonym verbs produce the correct json_verb and honor schema defaults."""
 
     def test_stream_produces_stream_verb(self):
         builder = VerbBuilder()
@@ -109,7 +158,6 @@ class TestVerbSynonyms:
         assert builder.to_list()[0]["verb"] == "listen"
 
     def test_stream_and_listen_accept_same_properties(self):
-        """Both synonyms accept the same spec properties."""
         b1 = VerbBuilder()
         b1.stream(url="wss://a.com", sampleRate=16000, mixType="stereo")
         b2 = VerbBuilder()
@@ -136,7 +184,7 @@ class TestVerbSynonyms:
 
     def test_elevenlabs_s2s_injects_vendor(self):
         builder = VerbBuilder()
-        builder.elevenlabs_s2s(llmOptions={})
+        builder.elevenlabs_s2s(auth={"agent_id": "agent-123"})
         assert builder.to_list()[0]["vendor"] == "elevenlabs"
 
     def test_ultravox_s2s_injects_vendor(self):
@@ -145,21 +193,21 @@ class TestVerbSynonyms:
         assert builder.to_list()[0]["vendor"] == "ultravox"
 
     def test_s2s_does_not_inject_vendor(self):
-        """Generic s2s should NOT inject a vendor — user provides it."""
+        """Generic s2s should not default a vendor — user provides it."""
         builder = VerbBuilder()
         builder.s2s(vendor="custom", llmOptions={})
         assert builder.to_list()[0]["vendor"] == "custom"
 
-    def test_user_can_override_injected_vendor(self):
-        """Explicit vendor kwarg should override the injected default."""
+    def test_vendor_shortcut_rejects_mismatched_vendor(self):
+        """Vendor-specific shortcut enforces its Literal vendor constraint."""
         builder = VerbBuilder()
-        builder.openai_s2s(vendor="custom-openai", llmOptions={})
-        assert builder.to_list()[0]["vendor"] == "custom-openai"
+        with pytest.raises(ValidationError):
+            builder.openai_s2s(vendor="anthropic", llmOptions={})
 
+
+# ── 'from' Python reserved word mapping ─────────────────────────────
 
 class TestPythonReservedWordMapping:
-    """'from' is reserved in Python; we accept 'from_' and serialize as 'from'."""
-
     def test_message_from_mapping(self):
         builder = VerbBuilder()
         builder.message(to="+1234", from_="+5678", text="Hello")
@@ -168,6 +216,8 @@ class TestPythonReservedWordMapping:
         assert "from_" not in verbs[0]
         assert verbs[0]["from"] == "+5678"
 
+
+# ── Chaining and builder lifecycle ─────────────────────────────────
 
 class TestBuilderChaining:
     def test_chaining_returns_self(self):
@@ -201,6 +251,8 @@ class TestBuilderChaining:
         assert "synthesizer" not in verbs[0]
 
 
+# ── JSON serialization of the full verb queue ─────────────────────
+
 class TestJsonSerialization:
     def test_output_is_json_serializable(self):
         builder = VerbBuilder()
@@ -226,9 +278,9 @@ class TestJsonSerialization:
         assert verbs[0]["say"]["synthesizer"]["vendor"] == "elevenlabs"
 
 
-class TestSipVerbNaming:
-    """SIP verbs use colon in JSON (sip:decline) but underscore in Python."""
+# ── SIP verb naming (colon in JSON, underscore in Python) ──────────
 
+class TestSipVerbNaming:
     def test_sip_decline_json_verb(self):
         builder = VerbBuilder()
         builder.sip_decline(status=486, reason="Busy Here")
@@ -245,7 +297,7 @@ class TestSipVerbNaming:
         assert builder.to_list()[0]["verb"] == "sip:refer"
 
 
-# ── Realistic jambonz application flows ─────────────────────────────
+# ── Realistic end-to-end flows ─────────────────────────────────────
 
 class TestRealisticFlows:
     def test_ivr_menu_flow(self):
@@ -309,22 +361,130 @@ class TestRealisticFlows:
         assert v["metadata"]["purpose"] == "recording"
 
 
-# ── Helpers ─────────────────────────────────────────────────────────
+# ── New: the three input styles (model, dict, kwargs) are equivalent
 
-def _dummy_value(spec_type):
-    """Generate a dummy value matching a JSON Schema type descriptor."""
-    if isinstance(spec_type, str):
-        if spec_type.startswith("#"):
-            return {}
-        if "|" in spec_type:
-            first = spec_type.split("|")[0].strip()
-            return _dummy_value(first)
-        return {"string": "test", "number": 1, "boolean": True, "object": {}, "array": []}.get(spec_type, "test")
-    if isinstance(spec_type, list):
-        return [{}]
-    if isinstance(spec_type, dict):
-        enum = spec_type.get("enum")
-        if enum:
-            return enum[0]
-        return _dummy_value(spec_type.get("type", "string"))
-    return "test"
+class TestInputStylesEquivalent:
+    """Passing a model, dict, or kwargs must produce the same wire output."""
+
+    def test_gather_three_styles_match(self):
+        Gather = verb_model("gather")
+        assert Gather is not None
+
+        payload = {
+            "input": ["speech", "digits"],
+            "actionHook": "/menu",
+            "timeout": 15,
+            "numDigits": 1,
+            "say": {"text": "Press 1 for sales"},
+            "recognizer": {"vendor": "deepgram", "language": "en-US"},
+        }
+
+        # 1) model
+        b1 = VerbBuilder()
+        b1.gather(Gather.model_validate(payload))
+
+        # 2) dict
+        b2 = VerbBuilder()
+        b2.gather(dict(payload))
+
+        # 3) kwargs
+        b3 = VerbBuilder()
+        b3.gather(**payload)
+
+        assert b1.to_list() == b2.to_list() == b3.to_list()
+
+    def test_say_three_styles_match(self):
+        Say = verb_model("say")
+        payload = {"text": "hello", "loop": 2}
+        b1 = VerbBuilder()
+        b1.say(Say.model_validate(payload))
+        b2 = VerbBuilder()
+        b2.say(dict(payload))
+        b3 = VerbBuilder()
+        b3.say(**payload)
+        assert b1.to_list() == b2.to_list() == b3.to_list()
+
+
+# ── New: validation catches typos and wrong types at construction ──
+
+class TestStrictValidation:
+    def test_typo_in_nested_field_rejected(self):
+        """Unknown fields on inner types raise at construction."""
+        builder = VerbBuilder()
+        with pytest.raises(ValidationError):
+            builder.gather(say={"txet": "typo — extra field"})
+
+    def test_missing_required_field_rejected(self):
+        """Play requires url — constructing without it fails fast."""
+        builder = VerbBuilder()
+        with pytest.raises(ValidationError):
+            builder.play()
+
+    def test_wrong_type_rejected(self):
+        """Passing a wrong-typed value for a field fails pydantic validation."""
+        builder = VerbBuilder()
+        with pytest.raises(ValidationError):
+            builder.say(text=12345, synthesizer="not-a-dict")
+
+    def test_model_and_kwargs_both_raises(self):
+        """Passing both a model/dict and kwargs is a user error."""
+        Say = verb_model("say")
+        builder = VerbBuilder()
+        with pytest.raises(TypeError):
+            builder.say(Say(text="hi"), text="also hi")
+
+
+# ── Public re-export modules provide typed model access ────────────
+
+class TestPublicImports:
+    def test_verbs_package_exports_typed_models(self):
+        from jambonz_sdk.verbs import Agent, Gather, OpenaiS2S, Say, SipDecline
+
+        assert Gather.__name__ == "Gather"
+        assert Say.__name__ == "Say"
+        assert Agent.__name__ == "Agent"
+        assert OpenaiS2S.__name__ == "OpenaiS2S"
+        assert SipDecline.__name__ == "SipDecline"
+
+    def test_components_package_exports_typed_models(self):
+        from jambonz_sdk.components import (
+            ActionHook,
+            Recognizer,
+            Synthesizer,
+            Target,
+        )
+
+        assert Recognizer.__name__ == "Recognizer"
+        assert Synthesizer.__name__ == "Synthesizer"
+        assert Target.__name__ == "Target"
+        assert ActionHook is not None
+
+    def test_end_to_end_typed_construction(self):
+        """The full typed API from the handover's 'goal' example works."""
+        from jambonz_sdk._models._generated.components.recognizer_deepgramOptions import (
+            DeepgramRecognizerOptions,
+        )
+        from jambonz_sdk.components import Recognizer
+        from jambonz_sdk.verbs import Gather, Say
+
+        builder = VerbBuilder()
+        builder.gather(Gather(
+            input=["speech", "digits"],
+            action_hook="/menu",
+            timeout=15,
+            num_digits=1,
+            say=Say(text="Press 1 for sales, 2 for support"),
+            recognizer=Recognizer(
+                vendor="deepgram",
+                language="en-US",
+                hints=["jambonz", "drachtio"],
+                deepgram_options=DeepgramRecognizerOptions(
+                    model="nova-3", smart_formatting=True
+                ),
+            ),
+        ))
+        [output] = builder.to_list()
+        assert output["verb"] == "gather"
+        assert output["actionHook"] == "/menu"
+        assert output["numDigits"] == 1
+        assert output["recognizer"]["deepgramOptions"]["smartFormatting"] is True

@@ -97,6 +97,11 @@ def generate() -> str:
         '"""Auto-generated type stubs for VerbBuilder.',
         "",
         "DO NOT EDIT — regenerate with: python scripts/generate_stubs.py",
+        "",
+        "Each verb method accepts three interchangeable input forms:",
+        "  1. a positional generated model instance",
+        "  2. a positional dict payload",
+        "  3. keyword arguments matching the verb's JSON Schema",
         '"""',
         "",
         "from typing import Any, Self",
@@ -118,25 +123,24 @@ def generate() -> str:
         properties = spec.get("properties", {})
         required = set(spec.get("required", []))
 
-        # Build parameter list
-        params = ["self"]
+        # First positional-only arg: model or dict. Then kwargs mirroring
+        # the schema properties for kwargs-style autocomplete.
+        params = ["self, arg: Any = ..., /"]
         for prop_name, prop_spec in properties.items():
             py_name = "from_" if prop_name == "from" else prop_name
             py_type = resolve_type(prop_spec)
             params.append(f"{py_name}: {py_type} = ...")
-
-        # Add **kwargs for forward compatibility
         params.append("**kwargs: Any")
 
         param_str = ",\n        ".join(params)
 
-        # Build docstring
         doc_lines = [f'        """{verb_def.doc}']
         if required:
             doc_lines.append("")
             doc_lines.append(f"        Required: {', '.join(sorted(required))}")
         doc_lines.append("")
         doc_lines.append("        Args:")
+        doc_lines.append("            arg: a typed model instance or a dict payload (alternative to kwargs).")
         for prop_name, prop_spec in properties.items():
             py_name = "from_" if prop_name == "from" else prop_name
             py_type = resolve_type(prop_spec)

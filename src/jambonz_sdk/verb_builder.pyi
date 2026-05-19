@@ -1,6 +1,11 @@
 """Auto-generated type stubs for VerbBuilder.
 
 DO NOT EDIT — regenerate with: python scripts/generate_stubs.py
+
+Each verb method accepts three interchangeable input forms:
+  1. a positional generated model instance
+  2. a positional dict payload
+  3. keyword arguments matching the verb's JSON Schema
 """
 
 from typing import Any, Self
@@ -14,7 +19,7 @@ class VerbBuilder:
     def to_list(self) -> list[AnyVerb]: ...
 
     def say(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         text: Any = ...,
         instructions: str = ...,
@@ -29,6 +34,7 @@ class VerbBuilder:
         """Speak text using TTS.
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             text: Any
             instructions: str
@@ -45,7 +51,7 @@ class VerbBuilder:
         ...
 
     def play(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         url: Any = ...,
         loop: Any = ...,
@@ -60,6 +66,7 @@ class VerbBuilder:
         Required: url
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             url: Any (required)
             loop: Any
@@ -74,7 +81,7 @@ class VerbBuilder:
         ...
 
     def gather(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         actionHook: Any = ...,
         input: list[Any] = ...,
@@ -100,6 +107,7 @@ class VerbBuilder:
         """Collect speech (STT) and/or DTMF input.
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             actionHook: Any
             input: list[Any]
@@ -127,7 +135,7 @@ class VerbBuilder:
         ...
 
     def openai_s2s(
-        self,
+        self, arg: Any = ..., /,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to OpenAI for real-time voice conversation.
@@ -135,6 +143,7 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
 
         Returns:
             self for chaining.
@@ -142,7 +151,7 @@ class VerbBuilder:
         ...
 
     def google_s2s(
-        self,
+        self, arg: Any = ..., /,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to Google for real-time voice conversation.
@@ -150,6 +159,7 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
 
         Returns:
             self for chaining.
@@ -157,7 +167,7 @@ class VerbBuilder:
         ...
 
     def deepgram_s2s(
-        self,
+        self, arg: Any = ..., /,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to Deepgram for real-time voice conversation.
@@ -165,6 +175,7 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
 
         Returns:
             self for chaining.
@@ -172,7 +183,7 @@ class VerbBuilder:
         ...
 
     def elevenlabs_s2s(
-        self,
+        self, arg: Any = ..., /,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to ElevenLabs Conversational AI agent.
@@ -180,6 +191,7 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
 
         Returns:
             self for chaining.
@@ -187,7 +199,7 @@ class VerbBuilder:
         ...
 
     def ultravox_s2s(
-        self,
+        self, arg: Any = ..., /,
         **kwargs: Any,
     ) -> Self:
         """Connect caller to Ultravox for real-time voice conversation.
@@ -195,6 +207,7 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
 
         Returns:
             self for chaining.
@@ -202,7 +215,7 @@ class VerbBuilder:
         ...
 
     def s2s(
-        self,
+        self, arg: Any = ..., /,
         **kwargs: Any,
     ) -> Self:
         """Generic S2S verb (use when vendor is determined at runtime).
@@ -210,6 +223,7 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
 
         Returns:
             self for chaining.
@@ -217,7 +231,7 @@ class VerbBuilder:
         ...
 
     def llm(
-        self,
+        self, arg: Any = ..., /,
         **kwargs: Any,
     ) -> Self:
         """Legacy LLM verb (prefer s2s or vendor-specific shortcuts).
@@ -225,6 +239,7 @@ class VerbBuilder:
         Required: llmOptions, vendor
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
 
         Returns:
             self for chaining.
@@ -232,7 +247,7 @@ class VerbBuilder:
         ...
 
     def dialogflow(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         credentials: Any = ...,
         project: str = ...,
@@ -260,6 +275,7 @@ class VerbBuilder:
         Required: credentials, lang, project
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             credentials: Any (required)
             project: str (required)
@@ -287,7 +303,7 @@ class VerbBuilder:
         ...
 
     def agent(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         stt: Any = ...,
         tts: Any = ...,
@@ -309,6 +325,7 @@ class VerbBuilder:
         Required: llm
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             stt: Any
             tts: Any
@@ -330,7 +347,7 @@ class VerbBuilder:
         ...
 
     def listen(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         url: str = ...,
         actionHook: Any = ...,
@@ -355,6 +372,7 @@ class VerbBuilder:
         Required: url
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             url: str (required)
             actionHook: Any
@@ -379,7 +397,7 @@ class VerbBuilder:
         ...
 
     def stream(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         url: str = ...,
         actionHook: Any = ...,
@@ -404,6 +422,7 @@ class VerbBuilder:
         Required: url
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             url: str (required)
             actionHook: Any
@@ -428,7 +447,7 @@ class VerbBuilder:
         ...
 
     def transcribe(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         enable: bool = ...,
         transcriptionHook: str = ...,
@@ -441,6 +460,7 @@ class VerbBuilder:
         """Enable real-time call transcription.
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             enable: bool
             transcriptionHook: str
@@ -455,7 +475,7 @@ class VerbBuilder:
         ...
 
     def dial(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         target: list[Any] = ...,
         actionHook: Any = ...,
@@ -489,6 +509,7 @@ class VerbBuilder:
         Required: target
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             target: list[Any] (required)
             actionHook: Any
@@ -522,7 +543,7 @@ class VerbBuilder:
         ...
 
     def conference(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         name: str = ...,
         beep: bool = ...,
@@ -548,6 +569,7 @@ class VerbBuilder:
         Required: name
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             name: str (required)
             beep: bool
@@ -573,7 +595,7 @@ class VerbBuilder:
         ...
 
     def enqueue(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         name: str = ...,
         actionHook: Any = ...,
@@ -586,6 +608,7 @@ class VerbBuilder:
         Required: name
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             name: str (required)
             actionHook: Any
@@ -598,7 +621,7 @@ class VerbBuilder:
         ...
 
     def dequeue(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         name: str = ...,
         actionHook: Any = ...,
@@ -612,6 +635,7 @@ class VerbBuilder:
         Required: name
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             name: str (required)
             actionHook: Any
@@ -625,7 +649,7 @@ class VerbBuilder:
         ...
 
     def hangup(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         headers: dict[str, Any] = ...,
         **kwargs: Any,
@@ -633,6 +657,7 @@ class VerbBuilder:
         """Terminate the call.
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             headers: dict[str, Any]
 
@@ -642,7 +667,7 @@ class VerbBuilder:
         ...
 
     def redirect(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         actionHook: Any = ...,
         statusHook: Any = ...,
@@ -653,6 +678,7 @@ class VerbBuilder:
         Required: actionHook
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             actionHook: Any (required)
             statusHook: Any
@@ -663,7 +689,7 @@ class VerbBuilder:
         ...
 
     def pause(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         length: int | float = ...,
         **kwargs: Any,
@@ -673,6 +699,7 @@ class VerbBuilder:
         Required: length
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             length: int | float (required)
 
@@ -682,7 +709,7 @@ class VerbBuilder:
         ...
 
     def sip_decline(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         status: int | float = ...,
         reason: str = ...,
@@ -694,6 +721,7 @@ class VerbBuilder:
         Required: status
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             status: int | float (required)
             reason: str
@@ -705,7 +733,7 @@ class VerbBuilder:
         ...
 
     def sip_request(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         method: str = ...,
         body: str = ...,
@@ -718,6 +746,7 @@ class VerbBuilder:
         Required: method
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             method: str (required)
             body: str
@@ -730,7 +759,7 @@ class VerbBuilder:
         ...
 
     def sip_refer(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         referTo: str = ...,
         referredBy: str = ...,
@@ -745,6 +774,7 @@ class VerbBuilder:
         Required: referTo
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             referTo: str (required)
             referredBy: str
@@ -759,7 +789,7 @@ class VerbBuilder:
         ...
 
     def config(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         synthesizer: Any = ...,
         recognizer: Any = ...,
@@ -791,6 +821,7 @@ class VerbBuilder:
         """Set session-level defaults.
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             synthesizer: Any
             recognizer: Any
@@ -824,7 +855,7 @@ class VerbBuilder:
         ...
 
     def tag(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         data: dict[str, Any] = ...,
         **kwargs: Any,
@@ -834,6 +865,7 @@ class VerbBuilder:
         Required: data
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             data: dict[str, Any] (required)
 
@@ -843,7 +875,7 @@ class VerbBuilder:
         ...
 
     def dtmf(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         dtmf: str = ...,
         duration: int | float = ...,
@@ -854,6 +886,7 @@ class VerbBuilder:
         Required: dtmf
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             dtmf: str (required)
             duration: int | float
@@ -864,7 +897,7 @@ class VerbBuilder:
         ...
 
     def dub(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         action: str = ...,
         track: str = ...,
@@ -879,6 +912,7 @@ class VerbBuilder:
         Required: action, track
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             action: str (required)
             track: str (required)
@@ -893,7 +927,7 @@ class VerbBuilder:
         ...
 
     def message(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         to: str = ...,
         from_: str = ...,
@@ -910,6 +944,7 @@ class VerbBuilder:
         Required: from, to
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             to: str (required)
             from_: str (required)
@@ -926,7 +961,7 @@ class VerbBuilder:
         ...
 
     def alert(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         message: str = ...,
         **kwargs: Any,
@@ -936,6 +971,7 @@ class VerbBuilder:
         Required: message
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             message: str (required)
 
@@ -945,13 +981,14 @@ class VerbBuilder:
         ...
 
     def answer(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         **kwargs: Any,
     ) -> Self:
         """Explicitly answer the call.
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
 
         Returns:
@@ -960,13 +997,14 @@ class VerbBuilder:
         ...
 
     def leave(
-        self,
+        self, arg: Any = ..., /,
         id: str = ...,
         **kwargs: Any,
     ) -> Self:
         """Leave a conference or queue.
 
         Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
 
         Returns:

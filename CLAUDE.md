@@ -17,13 +17,23 @@ jambonz is an open-source Communications Platform as a Service for building voic
 ```
 src/jambonz_sdk/
 ├── __init__.py          # Public API re-exports
+├── verbs/               # Public re-exports of generated verb models (Gather, Say, …)
+├── components/          # Public re-exports of generated component models (Recognizer, …)
+├── _models/             # Pydantic v2 models
+│   ├── base.py          # JambonzModel base class (alias/serialization config)
+│   ├── _registry.py     # JSON verb name → generated model class lookup
+│   ├── _generated/      # Auto-generated from JSON Schemas — do not edit
+│   │   ├── verbs/
+│   │   ├── components/
+│   │   └── callbacks/
+│   └── _patches/        # Hand-written supplements (currently empty stub)
 ├── types/
 │   ├── __init__.py
-│   ├── components.py    # Shared types: Synthesizer, Recognizer, Target, ActionHook, etc.
-│   ├── verbs.py         # All 26+ verb TypedDicts
+│   ├── components.py    # Legacy TypedDicts (still used internally)
+│   ├── verbs.py         # Legacy verb TypedDicts
 │   ├── rest.py          # REST API request/response types
 │   └── session.py       # Call session & WebSocket message types
-├── verb_builder.py      # VerbBuilder — methods auto-generated from JSON Schema
+├── verb_builder.py      # VerbBuilder — verb methods route through the generated models
 ├── verb_registry.py     # Verb definitions: maps spec entries → Python methods
 ├── webhook/
 │   ├── __init__.py
@@ -47,8 +57,8 @@ src/jambonz_sdk/
 
 - **Transport-agnostic verb building**: Same verb methods on both `WebhookResponse` and `Session`
 - **Fluent/chainable API**: All verb methods return `self` for method chaining
-- **TypedDict for verb schemas**: Type-safe verb construction matching JSON schemas exactly
-- **Auto-generated verb methods**: VerbBuilder methods are generated at import time from JSON Schema files (`@jambonz/schema`) + `verb_registry.py` — when the schema changes, the SDK automatically picks up new parameters
+- **Typed pydantic models**: Every verb and component has a generated pydantic v2 model. Verb methods accept a typed model, a raw dict, or kwargs interchangeably — all three are validated through the model and serialized via `model_dump(mode="json", by_alias=True, exclude_none=True)`. Typos and missing required fields fail at construction time rather than at the jambonz server. Dict and kwargs styles remain for backwards compatibility.
+- **Auto-generated verb methods**: VerbBuilder methods are generated at import time from JSON Schema files (`@jambonz/schema`) + `verb_registry.py`. When the schema changes, the SDK picks up new parameters automatically.
 - **aiohttp for both HTTP and WebSocket**: Single dependency for REST client and WS transport
 
 ## Verb System
@@ -95,9 +105,31 @@ python scripts/sync_schema.py v0.1.1
 
 # Copy from a local directory
 python scripts/sync_schema.py --local /path/to/schema
+
+# After any schema sync, regenerate the pydantic models and the .pyi stubs:
+python scripts/regen_models.py
+python scripts/generate_stubs.py
 ```
 
 Source: https://github.com/jambonz/schema
+
+### Pydantic model regeneration
+
+`scripts/regen_models.py` mirrors the bundled schemas, runs
+`datamodel-code-generator`, applies post-gen patches (declared as tables
+at the top of the script), then writes:
+
+- `src/jambonz_sdk/_models/_generated/` — generated classes, committed
+  as a build artifact so end users don't need codegen tools installed
+- `src/jambonz_sdk/verbs/__init__.py` and
+  `src/jambonz_sdk/components/__init__.py` — user-facing re-exports
+
+Post-processing performs: (1) `BaseModel` → `JambonzModel`, (2) `AnyUrl` → `str`
+(the schemas use `format: uri` even for relative paths like `/menu`),
+(3) nested `dict[str, Any]` → real model classes on fields like `Gather.say`,
+`Gather.play`, and `Agent.llm`, (4) appending cross-field validators to
+specific classes (`Gather` digit-bounds rules). All these live as tables
+in the script — extend them there, never edit generated files directly.
 
 ## AI Agent Support
 

@@ -31,6 +31,43 @@ app.router.add_post("/incoming", handle_incoming)
 web.run_app(app, port=3000)
 ```
 
+### Typed input (recommended)
+
+Every verb method also accepts a pydantic model for full IDE autocomplete and
+typo-proof nested fields:
+
+```python
+from jambonz_sdk.webhook import WebhookResponse
+from jambonz_sdk.verbs import Gather, Say
+from jambonz_sdk.components import Recognizer
+
+jambonz = WebhookResponse()
+jambonz.gather(Gather(
+    input=["speech", "digits"],
+    action_hook="/menu",
+    timeout=15,
+    num_digits=1,
+    say=Say(text="Press 1 for sales, 2 for support"),
+    recognizer=Recognizer(vendor="deepgram", language="en-US"),
+)).hangup()
+```
+
+Dict and kwargs styles both still work and coerce automatically, so existing
+apps keep running unchanged. Mix and match as you like:
+
+```python
+jambonz.gather(
+    input=["speech"],
+    say=Say(text="Hello"),              # model
+    recognizer={"vendor": "google"},    # dict
+)
+```
+
+Unknown fields, missing required fields, wrong types, and violated cross-field
+rules (e.g. `numDigits` combined with `minDigits`/`maxDigits`) raise
+`pydantic.ValidationError` at construction time — no more hunting silent
+failures after a round-trip to the jambonz server.
+
 ### WebSocket
 
 ```python
@@ -80,14 +117,27 @@ The SDK does **not** hardcode verb method signatures. Instead, verb methods (`.s
 - Every method has **real typed parameters** (not `**kwargs: Any`) so IDEs show autocomplete and type hints
 - Verb synonyms (`stream` ↔ `listen`, `openai_s2s` → `llm` with `vendor: "openai"`) are handled by the registry
 
+### Typed pydantic models
+
+Alongside the schema-driven method signatures, the SDK ships pydantic v2 models
+generated from the same JSON Schemas. They live under `jambonz_sdk.verbs` and
+`jambonz_sdk.components` and can be passed directly to any verb method.
+
+These models are a build artifact — produced by `scripts/regen_models.py`
+from the bundled schemas — and get checked into the repo so end users don't
+need codegen tools to install the SDK.
+
 ### Updating the schema
 
 ```bash
 # Download the pinned version from @jambonz/schema:
 python scripts/sync_schema.py
 
-# Or copy from a local clone:
-python scripts/sync_schema.py --local /path/to/schema
+# Regenerate the typed pydantic models so they match:
+python scripts/regen_models.py
+
+# Regenerate the .pyi stubs so IDE autocomplete stays in sync:
+python scripts/generate_stubs.py
 ```
 
 If a **new verb** was added (not just new properties), add one line to `verb_registry.py`:
@@ -132,12 +182,14 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 
 # Run tests
-pytest tests/unit/          # Fast unit tests (253)
-pytest tests/integration/   # Real server tests (26)
-pytest                      # All 279 tests
+pytest tests/unit/          # Fast unit tests
+pytest tests/integration/   # Real server tests
+pytest                      # All tests
 
-# Sync schema from upstream
+# Sync schema from upstream and regenerate pydantic models + stubs
 python scripts/sync_schema.py
+python scripts/regen_models.py
+python scripts/generate_stubs.py
 ```
 
 ## License

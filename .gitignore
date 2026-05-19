@@ -13,3 +13,4 @@ htmlcov/
 .coverage
 *.egg
 .vscode/
+spike/
