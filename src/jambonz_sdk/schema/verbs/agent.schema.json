@@ -21,6 +21,28 @@
       "$ref": "../components/synthesizer",
       "description": "Text-to-speech configuration for the agent."
     },
+    "autoLockLanguage": {
+      "oneOf": [
+        { "type": "boolean" },
+        { "type": "string", "enum": ["always"] }
+      ],
+      "description": "When using Deepgram Flux Multilingual, automatically adjust STT language hints and switch TTS voice based on detected language. Values: false (disabled), true (lock on first utterance), 'always' (continuously adapt on every turn). Default: false.",
+      "default": false
+    },
+    "languageConfig": {
+      "type": "object",
+      "description": "Per-language overrides for TTS. Keys are BCP-47 language codes. When autoLockLanguage detects a language switch, the agent uses the corresponding config.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "tts": {
+            "$ref": "../components/synthesizer",
+            "description": "TTS config override for this language. Merged with default tts."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "turnDetection": {
       "oneOf": [
         {
@@ -86,8 +108,93 @@
     },
     "llm": {
       "type": "object",
-      "description": "LLM configuration for the agent. See the 'llm' verb schema for details.",
-      "additionalProperties": true
+      "description": "LLM configuration for the agent.",
+      "required": ["vendor", "model"],
+      "properties": {
+        "vendor": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "vertex-gemini",
+            "vertex-openai",
+            "bedrock",
+            "deepseek",
+            "baseten",
+            "azure-openai",
+            "groq",
+            "huggingface"
+          ],
+          "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
+        },
+        "model": {
+          "type": "string",
+          "description": "Vendor-specific model id (e.g. 'gpt-4o', 'claude-sonnet-4-5-20250929')."
+        },
+        "label": {
+          "type": "string",
+          "description": "Optional label to disambiguate when the account has multiple credentials for the same vendor."
+        },
+        "auth": {
+          "type": "object",
+          "description": "Optional inline credentials. When omitted, feature-server looks up credentials by (vendor, label) from the database.",
+          "properties": {
+            "apiKey": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "connectOptions": {
+          "type": "object",
+          "description": "SDK-level client options.",
+          "properties": {
+            "timeout": { "type": "number", "minimum": 0 },
+            "maxRetries": { "type": "integer", "minimum": 0 },
+            "endpoint": { "type": "string" },
+            "baseURL": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "llmOptions": {
+          "type": "object",
+          "description": "Per-call LLM configuration.",
+          "properties": {
+            "systemPrompt": {
+              "type": "string",
+              "description": "System prompt for the model. Placed vendor-appropriately (top-level for Anthropic/Bedrock, config.systemInstruction for Gemini, role:'system' for OpenAI-compatibles)."
+            },
+            "messages": {
+              "type": "array",
+              "description": "Seed conversation history. A role:'system' entry is extracted into systemPrompt internally.",
+              "items": { "$ref": "#/$defs/llmMessage" }
+            },
+            "initialMessages": {
+              "type": "array",
+              "description": "Alias of 'messages' (historical).",
+              "items": { "$ref": "#/$defs/llmMessage" }
+            },
+            "maxTokens": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum tokens the model may generate per turn."
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Sampling temperature."
+            },
+            "tools": {
+              "type": "array",
+              "description": "Tool / function definitions available to the model. The MCP-flat shape `{name, description, parameters}` is canonical; the OpenAI-wrapped form `{type:'function', function:{...}}` is also accepted.",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     },
     "actionHook": {
       "$ref": "../components/actionHook",
@@ -172,11 +279,71 @@
         "required": ["url"]
       },
       "description": "External MCP servers that provide tools to the LLM. The agent connects at startup via SSE, discovers available tools, and makes them callable by the LLM."
+    },
+    "toolFiller": {
+      "oneOf": [
+        { "type": "boolean", "const": false },
+        { "$ref": "#/$defs/toolFillerConfig" }
+      ],
+      "description": "Configuration for playing filler audio while tool calls are in progress. Prevents silence during long-running tool executions."
     }
   },
   "required": [
     "llm"
   ],
+  "$defs": {
+    "llmMessage": {
+      "type": "object",
+      "description": "A conversation-history message. The library normalizes content to a string; adapters may carry vendor-native shapes internally.",
+      "required": ["role", "content"],
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": ["system", "user", "assistant", "tool"]
+        },
+        "content": {}
+      },
+      "additionalProperties": true
+    },
+    "toolFillerConfig": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["audio", "backchannel"],
+          "description": "Filler mode. 'audio' plays a looping audio file (killed immediately when tool returns). 'backchannel' uses TTS to speak short phrases like 'one moment...' or 'checking that...' (allowed to complete before next action)."
+        },
+        "startDelaySecs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Seconds to wait after tool invocation before playing filler. Prevents filler on fast tools. Default: 2",
+          "default": 2
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Audio file URL (for type='audio'). Should be loopable. Playback stops immediately when tool returns."
+        },
+        "style": {
+          "type": "string",
+          "description": "Free-form style hint for LLM-generated phrases (for type='backchannel'). Examples: 'casual', 'professional', 'friendly and patient'. The LLM interprets this when generating filler phrases at call start."
+        },
+        "escalationSecs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Seconds from tool invocation before generating a longer explanatory response (for type='backchannel'). Useful for tools that may take 10+ seconds. Default: 10",
+          "default": 10
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "audio" } } },
+          "then": { "required": ["url"] }
+        }
+      ]
+    }
+  },
   "examples": [
     {
       "verb": "agent",

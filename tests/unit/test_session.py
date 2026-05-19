@@ -292,18 +292,31 @@ class TestTtsStreaming:
 # ── Tool output ─────────────────────────────────────────────────────
 
 class TestToolOutput:
-    """Tool output per jambonz protocol:
-    {"type": "llm:tool-output", "data": {"tool_call_id": ..., "output": ...}}"""
+    """Tool output per jambonz protocol (canonical command envelope):
+    {"type": "command", "command": "llm:tool-output", "tool_call_id": ...,
+     "data": {"result": ...}}"""
 
     @pytest.mark.asyncio
-    async def test_tool_output(self):
+    async def test_tool_output_with_dict(self):
         s, ws = _make_session()
         result = await s.tool_output("call_abc", {"temperature": 72})
         assert result is s  # returns self for chaining
         msg = json.loads(ws.send.call_args[0][0])
-        assert msg["type"] == "llm:tool-output"
-        assert msg["data"]["tool_call_id"] == "call_abc"
-        assert msg["data"]["output"]["temperature"] == 72
+        assert msg["type"] == "command"
+        assert msg["command"] == "llm:tool-output"
+        assert msg["tool_call_id"] == "call_abc"
+        # dict passed through as-is for richer payloads
+        assert msg["data"]["temperature"] == 72
+
+    @pytest.mark.asyncio
+    async def test_tool_output_with_scalar_is_wrapped_as_result(self):
+        s, ws = _make_session()
+        await s.tool_output("call_xyz", "hello world")
+        msg = json.loads(ws.send.call_args[0][0])
+        assert msg["type"] == "command"
+        assert msg["command"] == "llm:tool-output"
+        assert msg["tool_call_id"] == "call_xyz"
+        assert msg["data"] == {"result": "hello world"}
 
 
 # ── Agent updates ────────────────────────────────────────────────
