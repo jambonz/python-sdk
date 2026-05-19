@@ -62,6 +62,7 @@ async def create_endpoint(
     port: int = 3000,
     env_vars: dict[str, dict[str, Any]] | None = None,
     logger_: logging.Logger | None = None,
+    compress: bool = True,
 ) -> tuple[MakeService, web.AppRunner]:
     """Create a WebSocket endpoint for jambonz applications.
 
@@ -75,6 +76,7 @@ async def create_endpoint(
         port: Bind port (default ``3000``).
         env_vars: Application environment variable schema for portal discovery.
         logger_: Optional logger instance.
+        compress: Enable WebSocket permessage-deflate compression (default ``True``).
 
     Returns:
         A tuple of ``(make_service, runner)`` where ``make_service`` is used
@@ -115,7 +117,10 @@ async def create_endpoint(
                 selected_protocol = proto
                 break
 
-        ws = web.WebSocketResponse(protocols=[selected_protocol] if selected_protocol else [])
+        ws = web.WebSocketResponse(
+            protocols=[selected_protocol] if selected_protocol else [],
+            compress=compress,
+        )
         await ws.prepare(request)
 
         # Wrap aiohttp WS into an adapter that the router can use

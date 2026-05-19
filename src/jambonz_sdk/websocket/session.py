@@ -47,6 +47,7 @@ class Session(VerbBuilder):
         self._ws = ws
         self._msgid = msgid
         self._handlers: dict[str, list[EventHandler]] = {}
+        self._tts_cmd_id = 0
 
         # Extract call properties from session data
         self.data = data
@@ -206,23 +207,39 @@ class Session(VerbBuilder):
 
     # ── TTS Token Streaming ─────────────────────────────────────────
 
-    async def send_tts_tokens(self, text: str, **opts: Any) -> None:
+    def _next_tts_id(self) -> int:
+        self._tts_cmd_id += 1
+        return self._tts_cmd_id
+
+    async def send_tts_tokens(self, text: str, *, id: int | None = None, **opts: Any) -> None:
         """Stream TTS text tokens for incremental synthesis."""
-        msg: dict[str, Any] = {"type": "tts:tokens", "data": {"tokens": text}}
+        msg: dict[str, Any] = {
+            "type": "command",
+            "command": "tts:tokens",
+            "data": {"id": id if id is not None else self._next_tts_id(), "tokens": text},
+        }
         if opts:
             msg["data"].update(opts)
         await self._ws.send(json.dumps(msg))
 
     async def flush_tts_tokens(self, **opts: Any) -> None:
         """Signal end of a TTS token stream."""
-        msg: dict[str, Any] = {"type": "tts:flush", "data": {}}
+        msg: dict[str, Any] = {
+            "type": "command",
+            "command": "tts:flush",
+            "data": {},
+        }
         if opts:
             msg["data"].update(opts)
         await self._ws.send(json.dumps(msg))
 
     async def clear_tts_tokens(self) -> None:
         """Clear pending TTS tokens."""
-        await self._ws.send(json.dumps({"type": "tts:clear", "data": {}}))
+        await self._ws.send(json.dumps({
+            "type": "command",
+            "command": "tts:clear",
+            "data": {},
+        }))
 
     # ── LLM Tool Output ────────────────────────────────────────────
 
