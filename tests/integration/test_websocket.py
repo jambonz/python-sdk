@@ -301,12 +301,17 @@ class TestTtsStreamingProtocol:
             await ws.send_str(_session_new())
             await _recv(ws)  # ack
             t1 = await _recv(ws)
-            assert t1["type"] == "tts:tokens"
+            assert t1["type"] == "command"
+            assert t1["command"] == "tts:tokens"
             assert t1["data"]["tokens"] == "Hello, "
+            assert t1["data"]["id"] == 1
             t2 = await _recv(ws)
+            assert t2["command"] == "tts:tokens"
             assert t2["data"]["tokens"] == "how can I help?"
+            assert t2["data"]["id"] == 2
             t3 = await _recv(ws)
-            assert t3["type"] == "tts:flush"
+            assert t3["type"] == "command"
+            assert t3["command"] == "tts:flush"
             await ws.close()
             await http.close()
         finally:
