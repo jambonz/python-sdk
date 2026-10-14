@@ -79,7 +79,23 @@ COLON_ID_ALIASES = {
 NESTED_OVERRIDES: list[tuple[str, str, str, str, str]] = [
     ("verbs/gather.py", "Gather", "say", ".say", "Say"),
     ("verbs/gather.py", "Gather", "play", ".play", "Play"),
-    ("verbs/agent.py", "Agent", "llm", ".llm", "LLM"),
+    # NB: ``Agent.llm`` used to be an untyped object here, but the schema
+    # now defines it inline, so codegen emits a proper nested ``Llm`` model
+    # and no override is needed.
+]
+
+# Verbs whose ``verb`` property is a multi-value ``enum`` rather than a
+# ``const`` (because the verb has a synonym, e.g. ``room`` for
+# ``conference``). datamodel-code-generator mishandles this shape: it
+# emits a dangling ``Verb(Enum)`` class and a broken field annotation
+# (``verb: Literal["conference#"]`` with no default). This table repairs
+# the field into a proper multi-value ``Literal`` with the canonical value
+# as the default, so the model validates and serializes correctly and the
+# verb registry can index it under every synonym.
+#
+# Format: (module_path, class_name, canonical_verb, all_verbs)
+VERB_ENUM_FIXUPS: list[tuple[str, str, str, list[str]]] = [
+    ("verbs/conference.py", "Conference", "conference", ["conference", "room"]),
 ]
 
 # Nested classes the re-export heuristic wouldn't pick up (because they
@@ -313,6 +329,57 @@ def apply_class_validators(output_dir: Path) -> None:
         path.write_text(source)
 
 
+def apply_verb_enum_fixups(output_dir: Path) -> None:
+    """Repair verb fields generated from a multi-value ``enum`` discriminator.
+
+    See ``VERB_ENUM_FIXUPS`` for why this is needed. For each target this:
+
+    - drops the dangling ``class Verb(Enum): ...`` block the generator emits,
+    - drops the now-unused ``from enum import Enum`` import,
+    - rewrites the broken ``verb: Literal[...]`` field into
+      ``verb: Literal["a", "b", ...] = "<canonical>"``.
+    """
+    for rel_path, class_name, canonical, all_verbs in VERB_ENUM_FIXUPS:
+        path = output_dir / rel_path
+        if not path.is_file():
+            print(f"  warning: verb-enum-fixup target {rel_path} missing — skipping")
+            continue
+        source = path.read_text()
+
+        # Drop the dangling ``class Verb(Enum): ...`` block (runs until the
+        # next blank line separating top-level statements).
+        source = re.sub(
+            r"\nclass Verb\(Enum\):\n(?:[ \t]+.*\n)+",
+            "\n",
+            source,
+            count=1,
+        )
+        # Drop the now-unused Enum import.
+        source = re.sub(r"^from enum import Enum\n", "", source, flags=re.MULTILINE)
+
+        # Rewrite the verb field inside the target class.
+        literal = ", ".join(f'"{v}"' for v in all_verbs)
+        replacement = f'    verb: Literal[{literal}] = "{canonical}"\n'
+        class_start = source.find(f"class {class_name}(")
+        if class_start < 0:
+            print(f"  warning: class {class_name} not found in {rel_path}")
+            continue
+        next_class = re.search(r"^class\s+\w+\(", source[class_start + 1:], re.MULTILINE)
+        class_end = class_start + 1 + (next_class.start() if next_class else len(source))
+        head, body, tail = source[:class_start], source[class_start:class_end], source[class_end:]
+        new_body, n = re.subn(
+            r"^    verb: Literal\[[^\n]*\]\n",
+            replacement,
+            body,
+            count=1,
+            flags=re.MULTILINE,
+        )
+        if n == 0:
+            print(f"  warning: verb field for {class_name} not found in {rel_path}")
+            continue
+        path.write_text(head + new_body + tail)
+
+
 def apply_nested_overrides(output_dir: Path) -> None:
     """Rewrite specific ``dict[str, Any]`` fields to reference real models."""
     for rel_path, class_name, field_name, target_module, target_class in NESTED_OVERRIDES:
@@ -395,12 +462,19 @@ def write_public_reexports(output_dir: Path) -> None:
         Falls back to the last model-class declared in the file.
         """
         stem = path.stem
-        # Collect every model/root class declared in the module.
-        keep_bases = ("JambonzModel", "LlmBaseProperties")
+        # Collect every model/root class declared in the module. A class is
+        # a model unless it subclasses a non-model base like ``Enum``. This
+        # keeps classes that extend ``JambonzModel`` directly as well as
+        # those extending another generated model (e.g. vendor s2s verbs
+        # extend ``LlmBaseProperties``; ``Transfer``/``Handoff`` extend
+        # ``TransferOptions``), while dropping generated enums.
+        non_model_bases = ("Enum", "str", "int", "float", "IntEnum", "StrEnum")
         classes: list[str] = []
         for name, base in class_re.findall(source):
-            if base in keep_bases or base.startswith("RootModel"):
-                classes.append(name)
+            short_base = base.rsplit(".", 1)[-1]
+            if short_base in non_model_bases:
+                continue
+            classes.append(name)
         if not classes:
             return None
 
@@ -549,6 +623,9 @@ def main() -> None:
         for path in py_files:
             postprocess_file(path)
         print(f"  post-processed {len(py_files)} files")
+
+        apply_verb_enum_fixups(OUTPUT_DIR)
+        print("  applied verb-enum fixups")
 
         apply_nested_overrides(OUTPUT_DIR)
         print("  applied nested-object overrides")

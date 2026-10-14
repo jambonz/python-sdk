@@ -24,6 +24,7 @@ from jambonz_sdk._models._generated.verbs.elevenlabs_s2s import ElevenlabsS2S
 from jambonz_sdk._models._generated.verbs.enqueue import Enqueue
 from jambonz_sdk._models._generated.verbs.gather import Gather
 from jambonz_sdk._models._generated.verbs.google_s2s import GoogleS2S
+from jambonz_sdk._models._generated.verbs.gptlive_s2s import GptLiveS2S
 from jambonz_sdk._models._generated.verbs.hangup import Hangup
 from jambonz_sdk._models._generated.verbs.leave import Leave
 from jambonz_sdk._models._generated.verbs.listen import Listen
@@ -32,8 +33,10 @@ from jambonz_sdk._models._generated.verbs.message import Message
 from jambonz_sdk._models._generated.verbs.openai_s2s import OpenaiS2S
 from jambonz_sdk._models._generated.verbs.pause import Pause
 from jambonz_sdk._models._generated.verbs.play import Play
+from jambonz_sdk._models._generated.verbs.qwen_s2s import QwenS2S
 from jambonz_sdk._models._generated.verbs.redirect import Redirect
 from jambonz_sdk._models._generated.verbs.rest_dial import RestDial
+from jambonz_sdk._models._generated.verbs.room import Room
 from jambonz_sdk._models._generated.verbs.s2s import S2S
 from jambonz_sdk._models._generated.verbs.say import Say
 from jambonz_sdk._models._generated.verbs.sip_decline import SipDecline
@@ -42,12 +45,15 @@ from jambonz_sdk._models._generated.verbs.sip_request import SipRequest
 from jambonz_sdk._models._generated.verbs.stream import Stream
 from jambonz_sdk._models._generated.verbs.tag import Tag
 from jambonz_sdk._models._generated.verbs.transcribe import Transcribe
+from jambonz_sdk._models._generated.verbs.transfer import Transfer
 from jambonz_sdk._models._generated.verbs.ultravox_s2s import UltravoxS2S
+from jambonz_sdk._models._generated.verbs.voicelive_s2s import AzureVoiceLiveS2S
 
 __all__ = [
     "Agent",
     "Alert",
     "Answer",
+    "AzureVoiceLiveS2S",
     "Conference",
     "Config",
     "DTMF",
@@ -60,6 +66,7 @@ __all__ = [
     "Enqueue",
     "Gather",
     "GoogleS2S",
+    "GptLiveS2S",
     "Hangup",
     "LLM",
     "Leave",
@@ -68,8 +75,10 @@ __all__ = [
     "OpenaiS2S",
     "Pause",
     "Play",
+    "QwenS2S",
     "Redirect",
     "RestDial",
+    "Room",
     "S2S",
     "Say",
     "SipDecline",
@@ -78,5 +87,6 @@ __all__ = [
     "Stream",
     "Tag",
     "Transcribe",
+    "Transfer",
     "UltravoxS2S",
 ]

@@ -22,7 +22,7 @@ A jambonz application controls phone calls by returning **arrays of verbs** — 
 - **Webhook (HTTP)**: Your server receives POST requests and returns JSON verb arrays. Stateless and simple.
 - **WebSocket**: Persistent bidirectional connection. Required for real-time LLM agents, audio streaming, and TTS token streaming.
 
-**IMPORTANT**: Any application that uses a speech-to-speech verb (`openai_s2s`, `google_s2s`, `deepgram_s2s`, `ultravox_s2s`, `elevenlabs_s2s`, `s2s`, or `agent`) MUST use WebSocket transport.
+**IMPORTANT**: Any application that uses a speech-to-speech verb (`openai_s2s`, `google_s2s`, `deepgram_s2s`, `ultravox_s2s`, `elevenlabs_s2s`, `gptlive_s2s`, `qwen_s2s`, `voicelive_s2s`, `s2s`, or `agent`) MUST use WebSocket transport.
 
 ## Core Verbs
 
@@ -32,7 +32,7 @@ A jambonz application controls phone calls by returning **arrays of verbs** — 
 - **gather** — Collect speech (STT) and/or DTMF input.
 
 ### AI & Real-time
-- **openai_s2s** / **google_s2s** / **deepgram_s2s** / **ultravox_s2s** / **elevenlabs_s2s** — Vendor-specific LLM voice conversation.
+- **openai_s2s** / **google_s2s** / **deepgram_s2s** / **ultravox_s2s** / **elevenlabs_s2s** / **gptlive_s2s** / **qwen_s2s** / **voicelive_s2s** — Vendor-specific LLM voice conversation.
 - **s2s** — Generic LLM voice conversation (use when vendor is determined at runtime).
 - **agent** — Higher-level voice AI agent with integrated turn detection.
 - **dialogflow** — Google Dialogflow agent.
@@ -41,7 +41,8 @@ A jambonz application controls phone calls by returning **arrays of verbs** — 
 
 ### Call Control
 - **dial** — Place an outbound call and bridge.
-- **conference** — Multi-party conference room.
+- **conference** / **room** — Multi-party conference room (`room` is a synonym for `conference`; prefer it in new apps).
+- **transfer** — Blind or warm (parked/three-way) transfer with built-in failure handling.
 - **enqueue** / **dequeue** — Call queuing.
 - **hangup** — End the call.
 - **redirect** — Transfer control to a different webhook.

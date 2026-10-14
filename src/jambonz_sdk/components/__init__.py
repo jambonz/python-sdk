@@ -15,6 +15,8 @@ from jambonz_sdk._models._generated.components.amd import AnsweringMachineDetect
 from jambonz_sdk._models._generated.components.auth import Auth
 from jambonz_sdk._models._generated.components.bidirectionalAudio import BidirectionalAudio
 from jambonz_sdk._models._generated.components.fillerNoise import FillerNoise
+from jambonz_sdk._models._generated.components.handoff import Handoff
+from jambonz_sdk._models._generated.components.hangup import Hangup
 from jambonz_sdk._models._generated.components.llm_base import LlmBaseProperties
 from jambonz_sdk._models._generated.components.recognizer import Recognizer
 from jambonz_sdk._models._generated.components.recognizer_assemblyAiOptions import (
@@ -22,9 +24,6 @@ from jambonz_sdk._models._generated.components.recognizer_assemblyAiOptions impo
 )
 from jambonz_sdk._models._generated.components.recognizer_awsOptions import AwsRecognizerOptions
 from jambonz_sdk._models._generated.components.recognizer_azureOptions import AzureRecognizerOptions
-from jambonz_sdk._models._generated.components.recognizer_cobaltOptions import (
-    CobaltRecognizerOptions,
-)
 from jambonz_sdk._models._generated.components.recognizer_customOptions import (
     CustomRecognizerOptions,
 )
@@ -40,12 +39,15 @@ from jambonz_sdk._models._generated.components.recognizer_gladiaOptions import (
 from jambonz_sdk._models._generated.components.recognizer_googleOptions import (
     GoogleRecognizerOptions,
 )
+from jambonz_sdk._models._generated.components.recognizer_gradiumOptions import (
+    GradiumRecognizerOptions,
+)
 from jambonz_sdk._models._generated.components.recognizer_houndifyOptions import (
     HoundifyRecognizerOptions,
 )
 from jambonz_sdk._models._generated.components.recognizer_ibmOptions import IbmRecognizerOptions
-from jambonz_sdk._models._generated.components.recognizer_nuanceOptions import (
-    NuanceRecognizerOptions,
+from jambonz_sdk._models._generated.components.recognizer_modulateOptions import (
+    ModulateRecognizerOptions,
 )
 from jambonz_sdk._models._generated.components.recognizer_nvidiaOptions import (
     NvidiaRecognizerOptions,
@@ -59,11 +61,11 @@ from jambonz_sdk._models._generated.components.recognizer_sonioxOptions import (
 from jambonz_sdk._models._generated.components.recognizer_speechmaticsOptions import (
     SpeechmaticsRecognizerOptions,
 )
-from jambonz_sdk._models._generated.components.recognizer_verbioOptions import (
-    VerbioRecognizerOptions,
-)
+from jambonz_sdk._models._generated.components.recognizer_xaiOptions import XaiRecognizerOptions
+from jambonz_sdk._models._generated.components.recognizer_zoomOptions import ZoomRecognizerOptions
 from jambonz_sdk._models._generated.components.synthesizer import Synthesizer
 from jambonz_sdk._models._generated.components.target import Target
+from jambonz_sdk._models._generated.components.transferOptions import TransferOptions
 from jambonz_sdk._models._generated.components.vad import VAD
 from jambonz_sdk._models._generated.verbs.agent import BargeIn, McpServer
 
@@ -77,18 +79,20 @@ __all__ = [
     "AzureRecognizerOptions",
     "BargeIn",
     "BidirectionalAudio",
-    "CobaltRecognizerOptions",
     "CustomRecognizerOptions",
     "DeepgramRecognizerOptions",
     "ElevenlabsRecognizerOptions",
     "FillerNoise",
     "GladiaRecognizerOptions",
     "GoogleRecognizerOptions",
+    "GradiumRecognizerOptions",
+    "Handoff",
+    "Hangup",
     "HoundifyRecognizerOptions",
     "IbmRecognizerOptions",
     "LlmBaseProperties",
     "McpServer",
-    "NuanceRecognizerOptions",
+    "ModulateRecognizerOptions",
     "NvidiaRecognizerOptions",
     "OpenaiRecognizerOptions",
     "Recognizer",
@@ -96,6 +100,8 @@ __all__ = [
     "SpeechmaticsRecognizerOptions",
     "Synthesizer",
     "Target",
+    "TransferOptions",
     "VAD",
-    "VerbioRecognizerOptions",
+    "XaiRecognizerOptions",
+    "ZoomRecognizerOptions",
 ]

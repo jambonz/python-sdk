@@ -86,10 +86,26 @@
           "description": "Allow the user to interrupt the assistant while it is speaking. Default: true.",
           "default": true
         },
+        "strategy": {
+          "type": "string",
+          "enum": ["vad", "interruptPrediction"],
+          "default": "vad",
+          "description": "How interruptions are detected. 'vad' (default): speech onset tentatively interrupts the assistant and is confirmed after minSpeechDuration of sustained speech, otherwise the assistant resumes. 'interruptPrediction': an ML model scores whether caller speech is a genuine interruption attempt vs backchannel (e.g. 'uh-huh'), so the assistant is never tentatively paused and backchannel does not cut it off; requires a provisioned vendor API key."
+        },
+        "vendor": {
+          "type": "string",
+          "description": "Detection vendor for strategy 'interruptPrediction'; defaults to 'krisp' (currently the only option). Not used with strategy 'vad'."
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Probability threshold for interruptPrediction (0-1). Higher values require stronger evidence before interrupting the assistant. Default: 0.5."
+        },
         "minSpeechDuration": {
           "type": "number",
           "minimum": 0,
-          "description": "Seconds of detected speech required before confirming an interruption. Prevents brief noises from cutting off the assistant. Default: 0.5",
+          "description": "Seconds of detected speech required before confirming an interruption. Prevents brief noises from cutting off the assistant. Applies to strategy 'vad' only. Default: 0.5",
           "default": 0.5
         },
         "sticky": {
@@ -108,29 +124,15 @@
     },
     "llm": {
       "type": "object",
-      "description": "LLM configuration for the agent.",
-      "required": ["vendor", "model"],
+      "description": "LLM configuration for the agent. Optional: when omitted, or when `vendor`/`model` are omitted, they fall back to the application's configured default LLM (like `stt`/`tts`).",
       "properties": {
         "vendor": {
           "type": "string",
-          "enum": [
-            "openai",
-            "anthropic",
-            "google",
-            "vertex-gemini",
-            "vertex-openai",
-            "bedrock",
-            "deepseek",
-            "baseten",
-            "azure-openai",
-            "groq",
-            "huggingface"
-          ],
-          "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
+          "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter. Optional: falls back to the application's default LLM vendor."
         },
         "model": {
           "type": "string",
-          "description": "Vendor-specific model id (e.g. 'gpt-4o', 'claude-sonnet-4-5-20250929')."
+          "description": "Vendor-specific model id (e.g. 'gpt-4o', 'claude-sonnet-4-5-20250929'). Optional: falls back to the application's default LLM model."
         },
         "label": {
           "type": "string",
@@ -182,6 +184,11 @@
               "type": "number",
               "minimum": 0,
               "description": "Sampling temperature."
+            },
+            "reasoningEffort": {
+              "type": "string",
+              "enum": ["minimal", "low", "medium", "high"],
+              "description": "Vendor-neutral thinking/reasoning effort. Mapped per-vendor by the LLM adapter (Gemini thinkingLevel, OpenAI reasoning_effort, Anthropic extended thinking); ignored by vendors without a native equivalent. 'minimal' minimizes thinking for lowest TTFT on latency-sensitive voice turns."
             },
             "tools": {
               "type": "array",
@@ -280,6 +287,14 @@
       },
       "description": "External MCP servers that provide tools to the LLM. The agent connects at startup via SSE, discovers available tools, and makes them callable by the LLM."
     },
+    "handoff": {
+      "$ref": "../components/handoff",
+      "description": "Declarative transfer-to-human config. When present, the runtime injects a 'transfer_to_human' tool into the agent's toolset and runs the packaged transfer choreography (blind/warm) when the LLM calls it."
+    },
+    "hangup": {
+      "$ref": "../components/hangup",
+      "description": "Enable the built-in hangup tool. When present, the runtime injects a 'hangup' tool into the agent's toolset; when the LLM calls it, the call is ended with a reason placed in an X-Reason SIP header (LLM-supplied reason wins, falling back to hangup.reason)."
+    },
     "toolFiller": {
       "oneOf": [
         { "type": "boolean", "const": false },
@@ -288,9 +303,6 @@
       "description": "Configuration for playing filler audio while tool calls are in progress. Prevents silence during long-running tool executions."
     }
   },
-  "required": [
-    "llm"
-  ],
   "$defs": {
     "llmMessage": {
       "type": "object",

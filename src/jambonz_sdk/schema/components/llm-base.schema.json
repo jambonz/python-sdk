@@ -11,8 +11,7 @@
     },
     "vendor": {
       "type": "string",
-      "description": "The LLM vendor to use.",
-      "examples": ["openai", "anthropic", "google", "groq", "deepseek", "baseten", "deepgram", "ultravox", "custom"]
+      "description": "The LLM vendor to use."
     },
     "model": {
       "type": "string",
@@ -85,10 +84,33 @@
       "$ref": "actionHook",
       "description": "A webhook invoked when the LLM calls a tool/function. Receives the tool name and arguments, and should return the tool result."
     },
+    "handoff": {
+      "$ref": "handoff",
+      "description": "Declarative transfer-to-human config for s2s verbs. When present, the runtime injects a 'transfer_to_human' tool and runs the packaged transfer choreography when the model calls it."
+    },
+    "hangup": {
+      "$ref": "hangup",
+      "description": "Enable the built-in hangup tool for s2s verbs. When present, the runtime injects a 'hangup' tool; when the model calls it, the call is ended with a reason placed in an X-Reason SIP header (LLM-supplied reason wins, falling back to hangup.reason)."
+    },
     "events": {
       "type": "array",
       "items": { "type": "string" },
       "description": "List of event types to receive via the eventHook."
+    },
+    "responseTimeoutMs": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Opt-in per-response stall watchdog (s2s vendors that support app-driven turn-taking, e.g. openai). Milliseconds to wait for a solicited response to be acknowledged before declaring a stall. When the timer expires a '{type:\"response.timeout\"}' event is sent to the eventHook. Omit or set to 0 to disable (the default)."
+    },
+    "cancelOnResponseTimeout": {
+      "type": "boolean",
+      "default": false,
+      "description": "When a response stall is detected (see responseTimeoutMs), cancel the in-progress server-side response so the next turn does not collide with an active response. Has no effect unless responseTimeoutMs is set."
+    },
+    "cancelOnBargeIn": {
+      "type": "boolean",
+      "default": false,
+      "description": "On caller barge-in, cancel the in-progress server-side response. Intended for app-driven turn-taking configurations where the vendor does not cancel the response itself (server-VAD configurations are unaffected)."
     }
   }
 }
