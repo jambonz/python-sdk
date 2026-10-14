@@ -32,11 +32,15 @@
     },
     "agent": {
       "type": "string",
-      "description": "The Dialogflow agent ID. Required for CX agents."
+      "description": "The Dialogflow agent ID for CX, or the app ID for CES. Required for both."
     },
     "environment": {
       "type": "string",
-      "description": "The Dialogflow environment to use."
+      "description": "The Dialogflow environment to use (CX)."
+    },
+    "deployment": {
+      "type": "string",
+      "description": "The deployment to use (CES). Omit to use the app's default."
     },
     "region": {
       "type": "string",
@@ -55,6 +59,11 @@
       "type": "string",
       "description": "The language code for the conversation (e.g. 'en-US')."
     },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,200}$",
+      "description": "Names the conversation on the Dialogflow side. Reuse the same value on a later dialogflow verb in the same call to return the caller to the same conversation, with the history the agent had built up - for example after handing the caller to a dial leg and back. Defaults to the call sid."
+    },
     "actionHook": {
       "$ref": "../components/actionHook",
       "description": "A webhook invoked when the Dialogflow session ends."
@@ -62,6 +71,10 @@
     "eventHook": {
       "$ref": "../components/actionHook",
       "description": "A webhook invoked for Dialogflow events during the conversation."
+    },
+    "toolHook": {
+      "$ref": "../components/actionHook",
+      "description": "A webhook invoked when the agent requests a client-side tool call (CX and CES). Respond with {outputParameters} (or {error}) to resume the conversation. The posted tool_call is each model's native shape: CX sends {tool, action, input_parameters}; CES sends {id, display_name, tool, args}. CES echoes its per-call id automatically, so you need not return it."
     },
     "events": {
       "type": "array",

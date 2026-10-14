@@ -13,6 +13,7 @@ from __future__ import annotations
 import importlib
 import logging
 import pkgutil
+import typing
 from typing import Any
 
 from pydantic import BaseModel
@@ -44,9 +45,19 @@ def _build_registry() -> dict[str, type[BaseModel]]:
             verb_field: Any = attr.model_fields.get("verb")
             if verb_field is None:
                 continue
+            # A verb field may be a single-value ``Literal["say"]`` or a
+            # multi-value ``Literal["conference", "room"]`` (a verb with
+            # synonyms). Index the model under every literal value, plus
+            # its string default, so each JSON verb name resolves here.
+            keys: set[str] = set()
+            for arg in typing.get_args(verb_field.annotation):
+                if isinstance(arg, str):
+                    keys.add(arg)
             default = verb_field.default
             if isinstance(default, str):
-                registry[default] = attr
+                keys.add(default)
+            for key in keys:
+                registry[key] = attr
     return registry
 
 

@@ -214,6 +214,54 @@ class VerbBuilder:
         """
         ...
 
+    def gptlive_s2s(
+        self, arg: Any = ..., /,
+        **kwargs: Any,
+    ) -> Self:
+        """Connect caller to GPT Live for real-time voice conversation.
+
+        Required: llmOptions, vendor
+
+        Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
+
+        Returns:
+            self for chaining.
+        """
+        ...
+
+    def qwen_s2s(
+        self, arg: Any = ..., /,
+        **kwargs: Any,
+    ) -> Self:
+        """Connect caller to Qwen for real-time voice conversation.
+
+        Required: llmOptions, vendor
+
+        Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
+
+        Returns:
+            self for chaining.
+        """
+        ...
+
+    def voicelive_s2s(
+        self, arg: Any = ..., /,
+        **kwargs: Any,
+    ) -> Self:
+        """Connect caller to Azure Voice Live for real-time voice conversation.
+
+        Required: llmOptions, vendor
+
+        Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
+
+        Returns:
+            self for chaining.
+        """
+        ...
+
     def s2s(
         self, arg: Any = ..., /,
         **kwargs: Any,
@@ -253,11 +301,14 @@ class VerbBuilder:
         project: str = ...,
         agent: str = ...,
         environment: str = ...,
+        deployment: str = ...,
         region: str = ...,
         model: str = ...,
         lang: str = ...,
+        sessionId: str = ...,
         actionHook: Any = ...,
         eventHook: Any = ...,
+        toolHook: Any = ...,
         events: list[Any] = ...,
         welcomeEvent: str = ...,
         welcomeEventParams: dict[str, Any] = ...,
@@ -281,11 +332,14 @@ class VerbBuilder:
             project: str (required)
             agent: str
             environment: str
+            deployment: str
             region: str
             model: str
             lang: str (required)
+            sessionId: str
             actionHook: Any
             eventHook: Any
+            toolHook: Any
             events: list[Any]
             welcomeEvent: str
             welcomeEventParams: dict[str, Any]
@@ -307,6 +361,8 @@ class VerbBuilder:
         id: str = ...,
         stt: Any = ...,
         tts: Any = ...,
+        autoLockLanguage: Any = ...,
+        languageConfig: dict[str, Any] = ...,
         turnDetection: Any = ...,
         bargeIn: dict[str, Any] = ...,
         noResponseTimeout: int | float = ...,
@@ -318,21 +374,24 @@ class VerbBuilder:
         earlyGeneration: bool = ...,
         noiseIsolation: Any = ...,
         mcpServers: list[Any] = ...,
+        handoff: Any = ...,
+        hangup: Any = ...,
+        toolFiller: Any = ...,
         **kwargs: Any,
     ) -> Self:
         """Integrated STT → LLM → TTS voice AI agent.
-
-        Required: llm
 
         Args:
             arg: a typed model instance or a dict payload (alternative to kwargs).
             id: str
             stt: Any
             tts: Any
+            autoLockLanguage: Any
+            languageConfig: dict[str, Any]
             turnDetection: Any
             bargeIn: dict[str, Any]
             noResponseTimeout: int | float
-            llm: dict[str, Any] (required)
+            llm: dict[str, Any]
             actionHook: Any
             eventHook: Any
             toolHook: Any
@@ -340,6 +399,9 @@ class VerbBuilder:
             earlyGeneration: bool
             noiseIsolation: Any
             mcpServers: list[Any]
+            handoff: Any
+            hangup: Any
+            toolFiller: Any
 
         Returns:
             self for chaining.
@@ -490,6 +552,7 @@ class VerbBuilder:
         dtmfHook: Any = ...,
         headers: dict[str, Any] = ...,
         anchorMedia: bool = ...,
+        codecs: list[Any] = ...,
         exitMediaPath: bool = ...,
         boostAudioSignal: Any = ...,
         listen: dict[str, Any] = ...,
@@ -502,6 +565,7 @@ class VerbBuilder:
         dub: list[Any] = ...,
         tag: dict[str, Any] = ...,
         forwardPAI: bool = ...,
+        srtpEncryption: str = ...,
         **kwargs: Any,
     ) -> Self:
         """Place outbound call and bridge to current caller.
@@ -524,6 +588,7 @@ class VerbBuilder:
             dtmfHook: Any
             headers: dict[str, Any]
             anchorMedia: bool
+            codecs: list[Any]
             exitMediaPath: bool
             boostAudioSignal: Any
             listen: dict[str, Any]
@@ -536,6 +601,7 @@ class VerbBuilder:
             dub: list[Any]
             tag: dict[str, Any]
             forwardPAI: bool
+            srtpEncryption: str
 
         Returns:
             self for chaining.
@@ -561,6 +627,7 @@ class VerbBuilder:
         enterHook: Any = ...,
         record: dict[str, Any] = ...,
         listen: dict[str, Any] = ...,
+        stream: dict[str, Any] = ...,
         distributeDtmf: bool = ...,
         **kwargs: Any,
     ) -> Self:
@@ -587,7 +654,80 @@ class VerbBuilder:
             enterHook: Any
             record: dict[str, Any]
             listen: dict[str, Any]
+            stream: dict[str, Any]
             distributeDtmf: bool
+
+        Returns:
+            self for chaining.
+        """
+        ...
+
+    def room(
+        self, arg: Any = ..., /,
+        id: str = ...,
+        name: str = ...,
+        beep: bool = ...,
+        memberTag: str = ...,
+        speakOnlyTo: str = ...,
+        startConferenceOnEnter: bool = ...,
+        endConferenceOnExit: bool = ...,
+        endConferenceDuration: int | float = ...,
+        maxParticipants: int | float = ...,
+        joinMuted: bool = ...,
+        actionHook: Any = ...,
+        waitHook: Any = ...,
+        statusEvents: list[Any] = ...,
+        statusHook: Any = ...,
+        enterHook: Any = ...,
+        record: dict[str, Any] = ...,
+        listen: dict[str, Any] = ...,
+        stream: dict[str, Any] = ...,
+        distributeDtmf: bool = ...,
+        **kwargs: Any,
+    ) -> Self:
+        """Place caller into a multi-party room (synonym for conference; prefer in new apps).
+
+        Required: name
+
+        Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
+            id: str
+            name: str (required)
+            beep: bool
+            memberTag: str
+            speakOnlyTo: str
+            startConferenceOnEnter: bool
+            endConferenceOnExit: bool
+            endConferenceDuration: int | float
+            maxParticipants: int | float
+            joinMuted: bool
+            actionHook: Any
+            waitHook: Any
+            statusEvents: list[Any]
+            statusHook: Any
+            enterHook: Any
+            record: dict[str, Any]
+            listen: dict[str, Any]
+            stream: dict[str, Any]
+            distributeDtmf: bool
+
+        Returns:
+            self for chaining.
+        """
+        ...
+
+    def transfer(
+        self, arg: Any = ..., /,
+        id: str = ...,
+        brief: dict[str, Any] = ...,
+        **kwargs: Any,
+    ) -> Self:
+        """Blind or warm transfer with built-in failure handling.
+
+        Args:
+            arg: a typed model instance or a dict payload (alternative to kwargs).
+            id: str
+            brief: dict[str, Any]
 
         Returns:
             self for chaining.

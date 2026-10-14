@@ -148,7 +148,7 @@ VerbDef("new_verb", "new_verb", doc="Description.")
 
 ## Features
 
-- **All 31 jambonz verbs**: say, play, gather, dial, conference, enqueue/dequeue, hangup, pause, redirect, config, tag, dtmf, dub, message, alert, answer, leave, listen/stream, transcribe, openai_s2s, google_s2s, deepgram_s2s, elevenlabs_s2s, ultravox_s2s, s2s, llm, dialogflow, agent, sip_decline, sip_request, sip_refer
+- **All jambonz verbs**: say, play, gather, dial, conference/room, transfer, enqueue/dequeue, hangup, pause, redirect, config, tag, dtmf, dub, message, alert, answer, leave, listen/stream, transcribe, openai_s2s, google_s2s, deepgram_s2s, elevenlabs_s2s, ultravox_s2s, gptlive_s2s, qwen_s2s, voicelive_s2s, s2s, llm, dialogflow, agent, sip_decline, sip_request, sip_refer
 - **Fluent chainable API**: `.say(...).gather(...).hangup()`
 - **Webhook transport**: `WebhookResponse` for HTTP apps (works with aiohttp, FastAPI, Flask, etc.)
 - **WebSocket transport**: `create_endpoint` with `Session`, event handling, `send()`/`reply()`
