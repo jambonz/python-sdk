@@ -26,12 +26,12 @@
         { "type": "boolean" },
         { "type": "string", "enum": ["always"] }
       ],
-      "description": "When using Deepgram Flux Multilingual, automatically adjust STT language hints and switch TTS voice based on detected language. Values: false (disabled), true (lock on first utterance), 'always' (continuously adapt on every turn). Default: false.",
+      "description": "Switch the TTS to the language the caller speaks, using the matching languageConfig entry. Works with any STT that reports the detected language: Deepgram (language 'multi', or Flux Multilingual), AssemblyAI (languageDetection), Google and Azure (altLanguages), Soniox (enableLanguageIdentification), Gladia and Modulate. Values: false (disabled), true (lock on the first utterance whose language is detected), 'always' (re-evaluate every turn). With Deepgram Flux, true also locks the STT language hints to the detected language. Default: false.",
       "default": false
     },
     "languageConfig": {
       "type": "object",
-      "description": "Per-language overrides for TTS. Keys are BCP-47 language codes. When autoLockLanguage detects a language switch, the agent uses the corresponding config.",
+      "description": "Per-language TTS overrides, used when autoLockLanguage detects a language. Keys are language codes such as 'es' or 'es-MX'. A detected language matches an exact key first (case-insensitive), then a key with the same primary language, so 'es' matches a detected 'es-US'. A detected language with no entry keeps the current TTS. The entry's tts is merged over the agent's tts; set its language to the code the TTS vendor expects.",
       "additionalProperties": {
         "type": "object",
         "properties": {
@@ -119,7 +119,13 @@
     "noResponseTimeout": {
       "type": "number",
       "minimum": 0,
-      "description": "Seconds to wait after the assistant finishes speaking before prompting the user to respond. 0 disables. Default: 0.",
+      "description": "Seconds to wait after the assistant finishes speaking before prompting the user to respond. 0 disables. Default: 12.",
+      "default": 12
+    },
+    "noResponseMaxPrompts": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "End the agent after this many no-response prompts in a row get no reply. The actionHook then fires with completionReason 'no_response', so the application decides what happens next. The count resets whenever the user speaks. 0 or unset: no limit (the agent keeps prompting). Requires feature-server with jambonz/feature-server#259.",
       "default": 0
     },
     "llm": {
@@ -225,11 +231,21 @@
       "description": "Enable speculative LLM prompting before end-of-turn is confirmed. When using Krisp turn detection, set this to true to speculatively prompt the LLM before Krisp confirms the turn has ended. If the transcript matches when turn ends, buffered tokens are released immediately — reducing response latency. Note: Deepgram Flux performs early generation automatically via its native EagerEndOfTurn signal regardless of this setting. Default: false.",
       "default": false
     },
+    "speak": {
+      "type": "boolean",
+      "description": "Whether the agent's text is spoken. With false the agent never talks (for example while it drives a DTMF-only phone menu with its tools): the LLM's text is still kept in conversation history, llm_response events and the transcript, but is never sent to TTS, and toolFiller and earlyGeneration are turned off. Each reply ends when the LLM finishes, as for a reply that only called tools. Default: true.",
+      "default": true
+    },
+    "speechCleanup": {
+      "type": "boolean",
+      "description": "Keep text the model was not meant to say out of TTS: a paragraph that is only a stage direction in (), [] or ** (such as '(silence)' or '[No response needed]'), and <think>, <thinking> or <reasoning> blocks. Asides inside a sentence are still spoken. Applied as the reply streams; ordinary speech is not delayed. A reply with nothing left to say ends without speaking. History, llm_response events and the transcript keep the model's raw text. Default: true.",
+      "default": true
+    },
     "noiseIsolation": {
       "oneOf": [
         {
           "type": "string",
-          "enum": ["krisp", "rnnoise"],
+          "enum": ["krisp", "rnnoise", "kugelaudio"],
           "description": "Shorthand — enable noise isolation with the specified vendor using default settings."
         },
         {
@@ -239,6 +255,24 @@
             "mode": {
               "type": "string",
               "description": "Noise isolation vendor/mode (e.g. 'krisp')."
+            },
+            "label": {
+              "type": "string",
+              "description": "Label of the speech credential to use, for vendors that need one (kugelaudio)."
+            },
+            "auth": {
+              "type": "object",
+              "description": "Optional inline credentials for vendors that need them (kugelaudio). When omitted, feature-server looks up the speech credential by (vendor, label).",
+              "properties": {
+                "apiKey": {
+                  "type": "string"
+                },
+                "apiUri": {
+                  "type": "string",
+                  "description": "Vendor API host, e.g. api.eu.kugelaudio.com."
+                }
+              },
+              "additionalProperties": true
             },
             "level": {
               "type": "number",

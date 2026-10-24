@@ -366,12 +366,15 @@ class VerbBuilder:
         turnDetection: Any = ...,
         bargeIn: dict[str, Any] = ...,
         noResponseTimeout: int | float = ...,
+        noResponseMaxPrompts: Any = ...,
         llm: dict[str, Any] = ...,
         actionHook: Any = ...,
         eventHook: Any = ...,
         toolHook: Any = ...,
         greeting: bool = ...,
         earlyGeneration: bool = ...,
+        speak: bool = ...,
+        speechCleanup: bool = ...,
         noiseIsolation: Any = ...,
         mcpServers: list[Any] = ...,
         handoff: Any = ...,
@@ -391,12 +394,15 @@ class VerbBuilder:
             turnDetection: Any
             bargeIn: dict[str, Any]
             noResponseTimeout: int | float
+            noResponseMaxPrompts: Any
             llm: dict[str, Any]
             actionHook: Any
             eventHook: Any
             toolHook: Any
             greeting: bool
             earlyGeneration: bool
+            speak: bool
+            speechCleanup: bool
             noiseIsolation: Any
             mcpServers: list[Any]
             handoff: Any
