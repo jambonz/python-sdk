@@ -524,12 +524,15 @@ class AgentVerb(TypedDict, total=False):
     turnDetection: str | dict[str, Any]
     bargeIn: dict[str, Any]
     noResponseTimeout: int
+    noResponseMaxPrompts: int
     llm: dict[str, Any]
     actionHook: ActionHook
     eventHook: ActionHook
     toolHook: ActionHook
     greeting: bool
     earlyGeneration: bool
+    speak: bool
+    speechCleanup: bool
     noiseIsolation: str | dict[str, Any]
     mcpServers: list[McpServer]
 
